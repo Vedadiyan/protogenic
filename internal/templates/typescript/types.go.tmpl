@@ -1,0 +1,111 @@
+{{- range $i := . }}
+export class {{ $i.Name }} { 
+    private readonly {{ "$data" }}: any
+    constructor({{ "$data" }}?: any) {
+        if ({{ "$data" }}) {
+            this.{{ "$data" }} = {{ "$data" }}
+            return
+        }
+        this.{{ "$data" }} = {}
+    }
+    get $raw(): any {
+        return this.$data
+    }
+    {{- range $x := $i.Fields }}
+        {{- if $x.JSONName }}
+            {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{end}} {
+                {{ 8 | Indent}}if ("{{ $x.JSONName }}" in this.{{ "$data" }}) {
+                    {{- if $x.IsBuiltIn}}
+                        {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.JSONName }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null {{ end }}
+                    {{- else }}
+                        {{- if not $x.IsArray }}
+                            {{ 12 | Indent}}return new {{ $x.Type }}(this.{{ "$data" }}.{{ $x.JSONName }} as Object)
+                        {{- else }}
+                            {{ 12 | Indent}}return {{ $x.Type }}.fromArray(this.{{ "$data" }}.{{ $x.JSONName }} as [])
+                        {{- end }}
+                    {{- end }}
+                {{ 8 | Indent}}}
+                {{- if $x.Optional }} 
+                    {{ 8 | Indent}}return undefined 
+                {{- else }}
+                    {{ 8 | Indent}}throw "`{{ $x.JSONName }}` does not exist on the object" 
+                {{- end }}
+            {{ 4 | Indent}}}
+            {{ 4 | Indent}}set {{ $x.Name | ToCamelCase}}(v: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{ end }}) {
+                {{- if $x.IsBuiltIn}}
+                    {{ 8 | Indent}}this.{{ "$data" }}.{{ $x.JSONName }} = v
+                {{- else }}
+                    {{- if $x.Optional }}
+                        {{ 8 | Indent}}if (v) {
+                            {{- if $x.IsArray }} 
+                                {{ 12 | Indent}}this.{{ "$data" }}.{{ $x.JSONName }} = v.map(x => x.{{ "$raw" }})
+                            {{- else }}
+                                {{ 12 | Indent}}this.{{ "$data" }}.{{ $x.JSONName }} = v.{{ "$raw" }}
+                            {{- end }}
+                        {{ 8 | Indent}}}
+                    {{- else }}
+                        {{- if $x.IsArray }} 
+                            {{ 8 | Indent}}this.{{ "$data" }}.{{ $x.JSONName }} = v.map(x => x.{{ "$raw" }})
+                        {{- else }}
+                            {{ 8 | Indent}}this.{{ "$data" }}.{{ $x.JSONName }} = v.{{ "$raw" }}
+                        {{- end }}
+                    {{- end }}
+                {{- end }} 
+            {{ 4 | Indent}}}
+        {{- else }}
+            {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{ end }} {
+                {{ 8 | Indent}}if ("{{  $x.Name }}" in this.{{ "$data" }}) {
+                    {{- if $x.IsBuiltIn}}
+                        {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.Name }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null {{ end }}
+                    {{- else }}
+                        {{- if not $x.IsArray }}
+                            {{ 12 | Indent}}return new {{ $x.Type }}(this.{{ "$data" }}.{{ $x.Name }} as Object)
+                        {{- else }}
+                            {{ 12 | Indent}}return {{ $x.Type }}.fromArray(this.{{ "$data" }}.{{ $x.Name }} as [])
+                        {{- end }}
+                    {{- end }}
+                {{ 8 | Indent}}}
+                {{- if $x.Optional }}
+                    {{ 8 | Indent}}return undefined 
+                {{- else }}
+                    {{ 8 | Indent}}throw "`{{ $x.Name }}` does not exist on the object" 
+                {{- end }}
+            {{ 4 | Indent}}}
+            {{ 4 | Indent}}set {{ $x.Name | ToCamelCase}}(v: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{ end }}) {
+                {{- if $x.IsBuiltIn}}
+                    {{ 8 | Indent}}this.{{ "$data" }}.{{ $x.Name }} = v
+                {{- else }}
+                    {{- if $x.Optional }}
+                        {{ 8 | Indent}}if (v) {
+                            {{- if $x.IsArray }} 
+                                {{ 12 | Indent}}this.{{ "$data" }}.{{ $x.Name }} = v.map(x => x.{{ "$raw" }})
+                            {{- else }}
+                                {{ 12 | Indent}}this.{{ "$data" }}.{{ $x.Name }} = v.{{ "$raw" }}
+                            {{- end }}
+                        {{ 8 | Indent}}}
+                    {{- else }}
+                        {{- if $x.IsArray }} 
+                            {{ 8 | Indent}}this.{{ "$data" }}.{{ $x.Name }} = v.map(x => x.{{ "$raw" }})
+                        {{ else }}
+                            {{ 8 | Indent}}this.{{ "$data" }}.{{ $x.Name }} = v.{{ "$raw" }}
+                        {{- end }}
+                    {{- end }}
+                {{- end }} 
+            {{ 4 | Indent}}}
+        {{- end }}
+    {{ end }}
+    public serialize(): string {
+        return JSON.stringify(this.{{ "$data" }})
+    }
+    public static deserialize(json: string): {{ $i.Name }} {
+        return new {{ $i.Name }}(JSON.parse(json))
+    }
+    public static fromArray(data: []): {{ $i.Name }}[] {
+        const array: {{ $i.Name }}[] = [] 
+        for (const obj of data) { 
+            array.push(new {{ $i.Name }}(obj))
+        }
+        return array
+    }
+}
+{{ end }}

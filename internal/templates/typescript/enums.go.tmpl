@@ -1,0 +1,4 @@
+{{ range $i := . }} export enum {{ $i.Name }} { {{ range $x := $i.Fields }}
+    {{ $x.Value | ToUpperCase }}{{ if $x.IsLast }},{{ end }}{{ end }}
+}
+{{ end }}
