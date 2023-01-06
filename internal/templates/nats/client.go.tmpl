@@ -2,12 +2,16 @@
 
 package {{ .Package }}
 
-import "github.com/nats-io/nats.go"
+import (
+	"time"
+
+	"github.com/nats-io/nats.go"
+)
 
 //go:generate autopilot proxy -n {{ .Name | ToPascalCase }} -o $GOGEN_PACKAGE
 //go:generate autopilot aggregated-proxy -n {{ .Name | ToPascalCase }} -g $GROUP -o $GOGEN_PACKAGE
 func {{ .Name | ToPascalCase }}Client (conn *nats.EncodedConn, timeout time.Duration) {{ .Name | ToPascalCase }} {
-	return func(rq {{ .Request | ToPascalCase }}) (*{{ .Response | ToPascalCase }}, error) {
+	return func(rq *{{ .Request | ToPascalCase }}) (*{{ .Response | ToPascalCase }}, error) {
 		var rs {{ .Response | ToPascalCase }}
 		err := conn.Request("{{ .Namespace | ToLowerCase }}", rq, &rs, timeout)
 		if err != nil {
