@@ -27,7 +27,11 @@ type Nats struct {
 	Logger    bool
 	Namespace string
 	Queue     *string
-	Package   string
+}
+
+type NatsContext struct {
+	NatsServices []Nats
+	Package      string
 }
 
 func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
@@ -43,6 +47,7 @@ func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
 	if err != nil {
 		return err
 	}
+	natsServices := make([]Nats, 0)
 	for _, service := range file.Services {
 		filename := file.GeneratedFilenamePrefix + ".%s.nats" + ".pb.go"
 		server := plugin.NewGeneratedFile(strings.ToLower(fmt.Sprintf(filename, "server")), file.GoImportPath)
@@ -57,25 +62,29 @@ func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
 				Logger:    true,
 				Namespace: namespace,
 				Queue:     &queue,
-				Package:   string(file.GoPackageName),
 			}
-			var serverCode, clientCode, commonCode bytes.Buffer
-			err := serverTemplate.Execute(&serverCode, natsService)
-			if err != nil {
-				return err
-			}
-			err = clientTemplate.Execute(&clientCode, natsService)
-			if err != nil {
-				return err
-			}
-			err = commonTemplate.Execute(&commonCode, natsService)
-			if err != nil {
-				return err
-			}
-			server.P(serverCode.String())
-			client.P(clientCode.String())
-			common.P(commonCode.String())
+			natsServices = append(natsServices, natsService)
 		}
+		natsContext := NatsContext{
+			NatsServices: natsServices,
+			Package:      string(file.GoPackageName),
+		}
+		var serverCode, clientCode, commonCode bytes.Buffer
+		err := serverTemplate.Execute(&serverCode, natsContext)
+		if err != nil {
+			return err
+		}
+		err = clientTemplate.Execute(&clientCode, natsContext)
+		if err != nil {
+			return err
+		}
+		err = commonTemplate.Execute(&commonCode, natsContext)
+		if err != nil {
+			return err
+		}
+		server.P(serverCode.String())
+		client.P(clientCode.String())
+		common.P(commonCode.String())
 	}
 	return nil
 }
