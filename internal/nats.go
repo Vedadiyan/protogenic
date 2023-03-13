@@ -21,6 +21,7 @@ var (
 )
 
 type Nats struct {
+	ImportPath          string
 	ConnName            string
 	Namespace           string
 	Queue               string
@@ -73,6 +74,7 @@ func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
 					responseMapper = StringToGoByteArray(string(file))
 				}
 				natsService := Nats{
+					ImportPath:          string(file.GoImportPath),
 					ConnName:            nats.Connection,
 					Namespace:           fmt.Sprintf("%s.%s", nats.Namespace, http.Name),
 					Queue:               EmptyIfNill(nats.Queue),
