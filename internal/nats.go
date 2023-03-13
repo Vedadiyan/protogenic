@@ -3,30 +3,36 @@ package protogenic
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"strings"
 	"text/template"
 
+	rpc "github.com/vedadiyan/protogenic/internal/autogen"
 	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/descriptorpb"
 
 	_ "embed"
 )
 
 var (
-	//go:embed templates/nats/client.go.tmpl
-	_client string
-	//go:embed templates/nats/server.go.tmpl
-	_server string
-	//go:embed templates/nats/common.go.tmpl
-	_common string
+	//go:embed templates/nats/service.go.tmpl
+	_service string
 )
 
 type Nats struct {
-	Name      string
-	Request   string
-	Response  string
-	Logger    bool
-	Namespace string
-	Queue     *string
+	ConnName            string
+	Namespace           string
+	Queue               string
+	Url                 string
+	Method              string
+	AuthService         string
+	RequestType         string
+	ResponseType        string
+	RequestMapper       string
+	ResponseMapper      string
+	CacheInterval       int
+	WebHeaderCollection map[string]string
 }
 
 type NatsContext struct {
@@ -35,120 +41,64 @@ type NatsContext struct {
 }
 
 func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
-	serverTemplate, err := template.New("server").Funcs(_funcs).Parse(_server)
+	serviceTemplate, err := template.New("service").Funcs(_funcs).Parse(_service)
 	if err != nil {
 		return err
 	}
-	clientTemplate, err := template.New("client").Funcs(_funcs).Parse(_client)
-	if err != nil {
-		return err
-	}
-	commonTemplate, err := template.New("server").Funcs(_funcs).Parse(_common)
-	if err != nil {
-		return err
-	}
-	natsServices := make([]Nats, 0)
 	for _, service := range file.Services {
-		filename := file.GeneratedFilenamePrefix + ".%s.nats" + ".pb.go"
-		server := plugin.NewGeneratedFile(strings.ToLower(fmt.Sprintf(filename, "server")), file.GoImportPath)
-		client := plugin.NewGeneratedFile(strings.ToLower(fmt.Sprintf(filename, "client")), file.GoImportPath)
-		common := plugin.NewGeneratedFile(strings.ToLower(fmt.Sprintf(filename, "common")), file.GoImportPath)
 		for _, method := range service.Methods {
-			namespace, queue := getNamespace(method.Comments.Leading)
-			natsService := Nats{
-				Name:      method.GoName,
-				Request:   method.Input.GoIdent.GoName,
-				Response:  method.Output.GoIdent.GoName,
-				Logger:    true,
-				Namespace: namespace,
-				Queue:     &queue,
+			options := method.Desc.Options().(*descriptorpb.MethodOptions)
+			nats := proto.GetExtension(options, rpc.E_Nats).(*rpc.NATS)
+			http := proto.GetExtension(options, rpc.E_Http).([]*rpc.HTTP)
+			microservice := proto.GetExtension(options, rpc.E_Microservice).(*rpc.Microservice)
+			apiGateway := proto.GetExtension(options, rpc.E_ApiGateway).(*rpc.APIGateway)
+			_ = http
+			_ = microservice
+			_ = apiGateway
+			for _, http := range http {
+				requestMapper := "[]byte{}"
+				if http.RequestMapper.GetFile() != "" {
+					file, err := os.ReadFile(http.RequestMapper.GetFile())
+					if err != nil {
+						return err
+					}
+					requestMapper = StringToGoByteArray(string(file))
+				}
+				responseMapper := "[]byte{}"
+				if http.ResponseMapper.GetFile() != "" {
+					file, err := os.ReadFile(http.ResponseMapper.GetFile())
+					if err != nil {
+						return err
+					}
+					responseMapper = StringToGoByteArray(string(file))
+				}
+				natsService := Nats{
+					ConnName:            nats.Connection,
+					Namespace:           fmt.Sprintf("%s.%s", nats.Namespace, http.Name),
+					Queue:               EmptyIfNill(nats.Queue),
+					Url:                 http.Url,
+					Method:              http.Method,
+					AuthService:         EmptyIfNill(http.AuthorizationService),
+					RequestType:         method.Input.GoIdent.GoName,
+					ResponseType:        method.Output.GoIdent.GoName,
+					RequestMapper:       requestMapper,
+					ResponseMapper:      responseMapper,
+					WebHeaderCollection: make(map[string]string),
+				}
+				for _, webHeader := range http.Header {
+					natsService.WebHeaderCollection[webHeader.Key] = webHeader.Value
+				}
+				filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s_%s.pb.go", service.GoName, method.GoName, http.Name)
+				svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
+				var serverCode bytes.Buffer
+				err := serviceTemplate.Execute(&serverCode, natsService)
+				if err != nil {
+					return err
+				}
+				svc.P(serverCode.String())
 			}
-			natsServices = append(natsServices, natsService)
 		}
-		natsContext := NatsContext{
-			NatsServices: natsServices,
-			Package:      string(file.GoPackageName),
-		}
-		var serverCode, clientCode, commonCode bytes.Buffer
-		err := serverTemplate.Execute(&serverCode, natsContext)
-		if err != nil {
-			return err
-		}
-		err = clientTemplate.Execute(&clientCode, natsContext)
-		if err != nil {
-			return err
-		}
-		err = commonTemplate.Execute(&commonCode, natsContext)
-		if err != nil {
-			return err
-		}
-		server.P(serverCode.String())
-		client.P(clientCode.String())
-		common.P(commonCode.String())
+
 	}
 	return nil
-}
-
-func getNamespace(comments protogen.Comments) (namespace string, queue string) {
-	var ns string = ""
-	var q string = ""
-	for _, comment := range strings.Split(comments.String(), "\n") {
-		tmp := AlignLeft(comment)
-		if strings.HasPrefix(tmp, "@namespace") {
-			ns = ExtractString(tmp)
-			continue
-		}
-		if strings.HasPrefix(tmp, "@queue") {
-			q = ExtractString(tmp)
-			continue
-		}
-	}
-	return ns, q
-}
-
-var characters = []string{
-	" ",
-	"/",
-	"\t",
-	"\r",
-	"\n",
-}
-
-func ExtractString(value string) string {
-	segments := strings.Split(value, " ")
-	if len(segments) >= 2 {
-		val := strings.TrimRight(strings.Join(segments[1:], " "), "\r\n")
-		return AlignRight(val)
-	}
-	return ""
-}
-
-func AlignLeft(str string) string {
-	output := str
-	for {
-		_str := output
-		for _, value := range characters {
-			_str = strings.TrimLeft(_str, value)
-		}
-		if _str == output {
-			break
-		}
-		output = _str
-	}
-	return output
-}
-
-func AlignRight(str string) string {
-	output := str
-	for {
-		_str := output
-		for _, value := range characters {
-			_str = strings.TrimRight(_str, value)
-		}
-		if _str == output {
-			break
-		}
-		output = _str
-	}
-	return output
 }

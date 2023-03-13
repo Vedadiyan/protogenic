@@ -1,0 +1,72 @@
+package templates
+
+import (
+	"time"
+
+	helpers "github.com/vedadiyan/goal-helpers/pkg"
+	"github.com/vedadiyan/goal/pkg/http"
+	"github.com/vedadiyan/goal/pkg/service"
+	"google.golang.org/protobuf/proto"
+)
+
+const (
+	_CONN_NAME      = "{{ .ConnName }}"
+	_NAMESPACE      = "{{ .Namespace }}"
+	_AUTH_SERVICE   = "{{ .AuthService }}"
+	_QUEUE          = "{{ .Queue }}"
+	_URL            = "{{ .Url }}"
+	_METHOD         = "{{ .Method }}"
+)
+
+var (
+	_url       *http.UrlTemplate
+	_reqMapper []byte
+	_resMapper []byte
+)
+
+type Request = {{ .RequestType }}
+type Response = {{ .ResponseType }}
+
+func handler(m Request) (Response, error) {
+	routeValues, queryParams, body, err := helpers.MakeReq(m, _reqMapper)
+	if err != nil {
+		return nil, err
+	}
+	url, err := _url.Url(routeValues, queryParams)
+	if err != nil {
+		return nil, err
+	}
+	webHeaders, err := getWHC()
+	if err != nil {
+		return nil, err
+	}
+	res, err := http.Send(url, webHeaders, _METHOD, body)
+	if err != nil {
+		return nil, err
+	}
+	return helpers.MakeRes[Response](res.Reader(), _resMapper)
+}
+
+func getWHC() (http.IWebHeaderCollection, error) {
+	whc := http.NewWebHeaderCollection()
+    {{- range $key, $value := .WebHeaderCollection }}
+    whc.Add("{{ $key }}", "{{ $value }}")
+    {{- end }}
+	if _AUTH_SERVICE != "" {
+		webHeaders, err := helpers.GetAuthHeaders(_CONN_NAME, _AUTH_SERVICE)
+		if err != nil {
+			return nil, err
+		}
+		for key, value := range webHeaders {
+			whc.Add(key, value)
+		}
+	}
+	return whc, nil
+}
+
+func init() {
+	_reqMapper = {{ .RequestMapper }}
+    _resMapper = {{ .ResponseMapper }}
+	_url = http.NewUrlTemplate(_URL)
+	service.Register(service.New(_CONN_NAME, _NAMESPACE, _QUEUE, handler, service.WithCache(time.Second * {{ .CacheInterval }})))
+}
