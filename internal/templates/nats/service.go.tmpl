@@ -44,7 +44,7 @@ func handler(m Request) (Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return helpers.ToJSONRes[Response](res.Reader(), _resMapper)
+	return helpers.FromJSONRes[Response](res.Reader(), _resMapper)
 }
 
 func getWHC() (http.IWebHeaderCollection, error) {
