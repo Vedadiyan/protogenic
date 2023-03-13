@@ -42,6 +42,7 @@ type NatsContext struct {
 }
 
 func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
+	path, err := os.Getwd()
 	serviceTemplate, err := template.New("service").Funcs(_funcs).Parse(_service)
 	if err != nil {
 		return err
@@ -59,7 +60,7 @@ func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
 			for _, http := range http {
 				requestMapper := "[]byte{}"
 				if http.RequestMapper.GetFile() != "" {
-					file, err := os.ReadFile(http.RequestMapper.GetFile())
+					file, err := os.ReadFile(CombinePath(path, http.RequestMapper.GetFile()))
 					if err != nil {
 						return err
 					}
@@ -67,7 +68,7 @@ func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
 				}
 				responseMapper := "[]byte{}"
 				if http.ResponseMapper.GetFile() != "" {
-					file, err := os.ReadFile(http.ResponseMapper.GetFile())
+					file, err := os.ReadFile(CombinePath(path, http.ResponseMapper.GetFile()))
 					if err != nil {
 						return err
 					}
