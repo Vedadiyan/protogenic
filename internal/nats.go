@@ -73,9 +73,8 @@ func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
 					}
 					responseMapper = StringToGoByteArray(string(file))
 				}
-				path := strings.Split(string(file.GoImportPath), "/")
 				natsService := Nats{
-					ImportPath:          path[len(path)-1],
+					ImportPath:          string(file.GoPackageName),
 					ConnName:            nats.Connection,
 					Namespace:           fmt.Sprintf("%s.%s", nats.Namespace, http.Name),
 					Queue:               EmptyIfNill(nats.Queue),
