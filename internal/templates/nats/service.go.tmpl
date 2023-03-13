@@ -28,7 +28,7 @@ type Request = {{ .RequestType }}
 type Response = {{ .ResponseType }}
 
 func handler(m Request) (Response, error) {
-	routeValues, queryParams, body, err := helpers.JSONReq(m, _reqMapper)
+	routeValues, queryParams, body, err := helpers.ToJSONReq(m, _reqMapper)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func handler(m Request) (Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return helpers.JSONRes[Response](res.Reader(), _resMapper)
+	return helpers.ToJSONRes[Response](res.Reader(), _resMapper)
 }
 
 func getWHC() (http.IWebHeaderCollection, error) {
