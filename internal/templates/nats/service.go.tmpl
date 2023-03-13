@@ -24,8 +24,10 @@ var (
 	_resMapper []byte
 )
 
-type Request = {{ .RequestType }}
-type Response = {{ .ResponseType }}
+type (
+    Request     = {{ .RequestType }}
+    Response    = {{ .ResponseType }}
+)
 
 func handler(m Request) (Response, error) {
 	routeValues, queryParams, body, err := helpers.ToJSONReq(m, _reqMapper)
