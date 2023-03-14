@@ -26,11 +26,11 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
-			err = protogenic.GenerateTypescript(gen, f)
-			if err != nil {
-				panic(err)
-			}
 			if len(f.Messages) > 0 {
+				err = protogenic.GenerateTypescript(gen, f)
+				if err != nil {
+					panic(err)
+				}
 				exec := exec.Command("protoc", "--go_out=./", fmt.Sprintf("--proto_path=%s", wd), fmt.Sprintf("%s/%s", wd, name))
 				exec.Stderr = os.Stderr
 				exec.Stdout = os.Stdout
