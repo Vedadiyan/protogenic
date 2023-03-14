@@ -1,6 +1,8 @@
 package {{ .ImportPath }}
 
 import (
+	"sync"
+	
 	"github.com/gofiber/fiber/v2"
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/gateways"
