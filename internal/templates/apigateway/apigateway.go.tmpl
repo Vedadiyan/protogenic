@@ -33,7 +33,7 @@ func {{ $key }}(c *fiber.Ctx) error {
 
 {{- if .IsAggregated }}
 func aggregated(c *fiber.Ctx) error {
-	req, err := helpers.GetJSONReq[ActionResponse](c)
+	req, err := helpers.GetJSONReq[Request](c)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func init() {
 	gateway := gateways.New("{{ .Route }}")
 	{{- range $key, $value := .Gateways }}
     gateway.Add("{{ $key }}", "{{ $.Method }}" , {{ $key }})
-    proxies["{{ $key }}"] = proxy.New("{{ $.ConnName }}", "{{ $value }}")
+    proxies["{{ $key }}"] = proxy.New[Response]("{{ $.ConnName }}", "{{ $value }}")
     {{- end }}
     {{- if .IsAggregated }}
     gateway.Add("", "{{ $.Method }}", aggregated)
