@@ -49,7 +49,7 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 				gateways[http.Name] = fmt.Sprintf("%s.%s", nats.Namespace, http.Name)
 			}
 			gateway := APIGatewayContext{
-				ImportPath:   string(file.GoImportPath),
+				ImportPath:   string(file.GoPackageName),
 				ConnName:     nats.Connection,
 				Route:        apiGateway.Route,
 				Method:       IfNill(apiGateway.Method, "GET"),
