@@ -44,7 +44,9 @@ func CombinePath(path ...string) string {
 	buffer := bytes.NewBufferString("")
 	for i := 0; i < len(path); i++ {
 		buffer.WriteString(strings.ReplaceAll(strings.TrimSuffix(strings.TrimPrefix(path[i], "/"), "/"), "\\", "/"))
-		buffer.WriteString("/")
+		if i < len(path)-1 {
+			buffer.WriteString("/")
+		}
 	}
 	return buffer.String()
 }
