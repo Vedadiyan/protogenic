@@ -17,7 +17,7 @@ var (
 	proxies map[string]proxy.NATSProxy[Response]
 )
 
-{{- range $key, _ := $.gateways }}
+{{- range $key := $.gateways }}
 func {{ $key }}(c *fiber.Ctx) error {
 	req, err := helpers.GetJSONReq[Request](c)
 	if err != nil {
