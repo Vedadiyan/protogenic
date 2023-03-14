@@ -17,7 +17,7 @@ var (
 	proxies map[string]proxy.NATSProxy[Response]
 )
 
-{{- range $key := $.gateways }}
+{{- range $key, $value := .Gateways }}
 func {{ $key }}(c *fiber.Ctx) error {
 	req, err := helpers.GetJSONReq[Request](c)
 	if err != nil {
@@ -31,7 +31,7 @@ func {{ $key }}(c *fiber.Ctx) error {
 }
 {{- end }}
 
-{{- if .Aggregated }}
+{{- if .IsAggregated }}
 func aggregated(c *fiber.Ctx) error {
 	req, err := helpers.GetJSONReq[ActionResponse](c)
 	if err != nil {
@@ -71,14 +71,14 @@ func aggregated(c *fiber.Ctx) error {
 {{- end }}
 
 func init() {
-    proxies = make(map[string]proxy.NATSProxy[Response])
+	proxies = make(map[string]proxy.NATSProxy[Response])
 	gateway := gateways.New("{{ .Route }}")
-	{{- range $key, $value := $.gateways }}
-    gateway.Add("{{ $key }}", "{{ .Method }}", {{ $key }})
-    proxies["{{ $key }}"] = proxy.New("{{ .ConnName }}", "{{ $value }}")
+	{{- range $key, $value := .Gateways }}
+    gateway.Add("{{ $key }}", "{{ $.Method }}" , {{ $key }})
+    proxies["{{ $key }}"] = proxy.New("{{ $.ConnName }}", "{{ $value }}")
     {{- end }}
-    {{- if .Aggregated }}
-    gateway.Add("", "{{ .Method }}", aggregated)
+    {{- if .IsAggregated }}
+    gateway.Add("", "{{ $.Method }}", aggregated)
     {{- end }}
     gateways.Register(gateway)
 }
