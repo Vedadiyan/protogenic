@@ -3,7 +3,6 @@ package protogenic
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"strings"
 	"text/template"
 
@@ -16,37 +15,23 @@ import (
 )
 
 var (
-	//go:embed templates/nats/service.go.tmpl
+	//go:embed templates/apigateway/apigateway.go.tmpl
 	_apigateway string
 )
 
-type APIGateway struct {
-	ImportPath          string
-	ConnName            string
-	Namespace           string
-	Queue               string
-	Url                 string
-	Method              string
-	AuthService         string
-	RequestType         string
-	ResponseType        string
-	RequestMapper       string
-	ResponseMapper      string
-	CacheInterval       int
-	WebHeaderCollection map[string]string
-}
-
 type APIGatewayContext struct {
-	NatsServices []Nats
-	Package      string
+	ImportPath   string
+	ConnName     string
+	Route        string
+	Method       string
+	RequestType  string
+	ResponseType string
+	Gateways     map[string]string
+	IsAggregated bool
 }
 
 func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
-	path, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	serviceTemplate, err := template.New("service").Funcs(_funcs).Parse(_service)
+	apiGatewayTemplate, err := template.New("apigateway").Funcs(_funcs).Parse(_apigateway)
 	if err != nil {
 		return err
 	}
@@ -55,54 +40,32 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 			options := method.Desc.Options().(*descriptorpb.MethodOptions)
 			nats := proto.GetExtension(options, rpc.E_Nats).(*rpc.NATS)
 			http := proto.GetExtension(options, rpc.E_Http).([]*rpc.HTTP)
-			microservice := proto.GetExtension(options, rpc.E_Microservice).(*rpc.Microservice)
 			apiGateway := proto.GetExtension(options, rpc.E_ApiGateway).(*rpc.APIGateway)
 			_ = http
-			_ = microservice
+
 			_ = apiGateway
+			gateways := make(map[string]string)
 			for _, http := range http {
-				requestMapper := "[]byte{}"
-				if http.RequestMapper.GetFile() != "" {
-					file, err := os.ReadFile(CombinePath(path, http.RequestMapper.GetFile()))
-					if err != nil {
-						return err
-					}
-					requestMapper = StringToGoByteArray(string(file))
-				}
-				responseMapper := "[]byte{}"
-				if http.ResponseMapper.GetFile() != "" {
-					file, err := os.ReadFile(CombinePath(path, http.ResponseMapper.GetFile()))
-					if err != nil {
-						return err
-					}
-					responseMapper = StringToGoByteArray(string(file))
-				}
-				natsService := Nats{
-					ImportPath:          string(file.GoPackageName),
-					ConnName:            nats.Connection,
-					Namespace:           fmt.Sprintf("%s.%s", nats.Namespace, http.Name),
-					Queue:               EmptyIfNill(nats.Queue),
-					Url:                 http.Url,
-					Method:              http.Method,
-					AuthService:         EmptyIfNill(http.AuthorizationService),
-					RequestType:         method.Input.GoIdent.GoName,
-					ResponseType:        method.Output.GoIdent.GoName,
-					RequestMapper:       requestMapper,
-					ResponseMapper:      responseMapper,
-					WebHeaderCollection: make(map[string]string),
-				}
-				for _, webHeader := range http.Header {
-					natsService.WebHeaderCollection[webHeader.Key] = webHeader.Value
-				}
-				filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s_%s.pb.go", service.GoName, method.GoName, http.Name)
-				svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
-				var serverCode bytes.Buffer
-				err := serviceTemplate.Execute(&serverCode, natsService)
-				if err != nil {
-					return err
-				}
-				svc.P(serverCode.String())
+				gateways[http.Name] = fmt.Sprintf("%s.%s", nats.Namespace, http.Name)
 			}
+			gateway := APIGatewayContext{
+				ImportPath:   string(file.GoImportPath),
+				ConnName:     nats.Connection,
+				Route:        apiGateway.Route,
+				Method:       IfNill(apiGateway.Method, "GET"),
+				RequestType:  method.Input.GoIdent.GoName,
+				ResponseType: method.Output.GoIdent.GoName,
+				Gateways:     gateways,
+				IsAggregated: true,
+			}
+			filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s_gateway.pb.go", service.GoName, method.GoName)
+			svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
+			var serverCode bytes.Buffer
+			err := apiGatewayTemplate.Execute(&serverCode, gateway)
+			if err != nil {
+				return err
+			}
+			svc.P(serverCode.String())
 		}
 
 	}
