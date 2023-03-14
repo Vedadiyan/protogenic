@@ -43,6 +43,9 @@ type NatsContext struct {
 
 func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
 	path, err := os.Getwd()
+	if err != nil {
+		return err
+	}
 	serviceTemplate, err := template.New("service").Funcs(_funcs).Parse(_service)
 	if err != nil {
 		return err
