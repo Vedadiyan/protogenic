@@ -10,12 +10,13 @@ import (
 )
 
 const (
-	_CONN_NAME      = "{{ .ConnName }}"
-	_NAMESPACE      = "{{ .Namespace }}"
-	_AUTH_SERVICE   = "{{ .AuthService }}"
-	_QUEUE          = "{{ .Queue }}"
-	_URL            = "{{ .Url }}"
-	_METHOD         = "{{ .Method }}"
+	_CN          = "{{ .ConnName }}"
+	_NS          = "{{ .Namespace }}"
+	_AUTH_SVC    = "{{ .AuthService }}"
+	_AUTH_SVC_CI = {{ .AuthServiceCacheInterval }}
+	_QUEUE       = "{{ .Queue }}"
+	_URL         = "{{ .Url }}"
+	_METHOD      = "{{ .Method }}"
 )
 
 var (
@@ -25,16 +26,16 @@ var (
 )
 
 type (
-    Request     = {{ .RequestType }}
-    Response    = {{ .ResponseType }}
+	Request  = proto.Message
+	Response = proto.Message
 )
 
 func handler(m Request) (Response, error) {
-	routeValues, queryParams, body, err := helpers.ToJSONReq(m, _reqMapper)
+	req, err := helpers.ToJSONReq(m, _reqMapper)
 	if err != nil {
 		return nil, err
 	}
-	url, err := _url.Url(routeValues, queryParams)
+	url, err := _url.Url(req.RouteValues, req.QueryParams)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +43,7 @@ func handler(m Request) (Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	res, err := http.Send(url, webHeaders, _METHOD, body)
+	res, err := http.Send(url, webHeaders, _METHOD, req.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -51,11 +52,12 @@ func handler(m Request) (Response, error) {
 
 func getWHC() (http.IWebHeaderCollection, error) {
 	whc := http.NewWebHeaderCollection()
-    {{- range $key, $value := .WebHeaderCollection }}
+	{{- range $key, $value := .WebHeaderCollection }}
     whc.Add("{{ $key }}", "{{ $value }}")
     {{- end }}
-	if _AUTH_SERVICE != "" {
-		webHeaders, err := helpers.GetAuthHeaders(_CONN_NAME, _AUTH_SERVICE)
+	if _AUTH_SVC != "" {
+		webHeaders, err :=
+			helpers.GetAuthHeaders(_CN, _AUTH_SVC, _AUTH_SVC_CI)
 		if err != nil {
 			return nil, err
 		}
@@ -68,7 +70,15 @@ func getWHC() (http.IWebHeaderCollection, error) {
 
 func init() {
 	_reqMapper = {{ .RequestMapper }}
-    _resMapper = {{ .ResponseMapper }}
+	_resMapper = {{ .ResponseMapper }}
 	_url = http.NewUrlTemplate(_URL)
-	service.Register(service.New(_CONN_NAME, _NAMESPACE, _QUEUE, handler, service.WithCache(time.Second * {{ .CacheInterval }})))
+	service.Register(
+		service.New(
+			_CN,
+			_NS,
+			_QUEUE,
+			handler,
+			service.WithCache(time.Hour),
+		),
+	)
 }

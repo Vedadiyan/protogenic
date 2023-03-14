@@ -17,32 +17,31 @@ import (
 
 var (
 	//go:embed templates/nats/service.go.tmpl
-	_service string
+	_apigateway string
 )
 
-type Nats struct {
-	ImportPath               string
-	ConnName                 string
-	Namespace                string
-	Queue                    string
-	Url                      string
-	Method                   string
-	AuthService              string
-	AuthServiceCacheInterval int32
-	RequestType              string
-	ResponseType             string
-	RequestMapper            string
-	ResponseMapper           string
-	CacheInterval            int
-	WebHeaderCollection      map[string]string
+type APIGateway struct {
+	ImportPath          string
+	ConnName            string
+	Namespace           string
+	Queue               string
+	Url                 string
+	Method              string
+	AuthService         string
+	RequestType         string
+	ResponseType        string
+	RequestMapper       string
+	ResponseMapper      string
+	CacheInterval       int
+	WebHeaderCollection map[string]string
 }
 
-type NatsContext struct {
+type APIGatewayContext struct {
 	NatsServices []Nats
 	Package      string
 }
 
-func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
+func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 	path, err := os.Getwd()
 	if err != nil {
 		return err
@@ -79,19 +78,18 @@ func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
 					responseMapper = StringToGoByteArray(string(file))
 				}
 				natsService := Nats{
-					ImportPath:               string(file.GoPackageName),
-					ConnName:                 nats.Connection,
-					Namespace:                fmt.Sprintf("%s.%s", nats.Namespace, http.Name),
-					Queue:                    EmptyIfNill(nats.Queue),
-					Url:                      http.Url,
-					Method:                   http.Method,
-					AuthService:              EmptyIfNill(http.AuthorizationService),
-					AuthServiceCacheInterval: IfNill(http.AuthorizationCacheSeconds, -1),
-					RequestType:              method.Input.GoIdent.GoName,
-					ResponseType:             method.Output.GoIdent.GoName,
-					RequestMapper:            requestMapper,
-					ResponseMapper:           responseMapper,
-					WebHeaderCollection:      make(map[string]string),
+					ImportPath:          string(file.GoPackageName),
+					ConnName:            nats.Connection,
+					Namespace:           fmt.Sprintf("%s.%s", nats.Namespace, http.Name),
+					Queue:               EmptyIfNill(nats.Queue),
+					Url:                 http.Url,
+					Method:              http.Method,
+					AuthService:         EmptyIfNill(http.AuthorizationService),
+					RequestType:         method.Input.GoIdent.GoName,
+					ResponseType:        method.Output.GoIdent.GoName,
+					RequestMapper:       requestMapper,
+					ResponseMapper:      responseMapper,
+					WebHeaderCollection: make(map[string]string),
 				}
 				for _, webHeader := range http.Header {
 					natsService.WebHeaderCollection[webHeader.Key] = webHeader.Value

@@ -1,0 +1,84 @@
+package {{ .ImportPath }}
+
+import (
+	"github.com/gofiber/fiber/v2"
+	helpers "github.com/vedadiyan/goal-helpers/pkg"
+	"github.com/vedadiyan/goal/pkg/gateways"
+	"github.com/vedadiyan/goal/pkg/proxy"
+	"google.golang.org/protobuf/proto"
+)
+
+type (
+    Request = {{ .RequestType }}
+    Response = {{.ResponseType }}
+)
+
+var (
+	proxies map[string]proxy.NATSProxy[Response]
+)
+
+{{- range $key, _ := $.gateways }}
+func {{ $key }}(c *fiber.Ctx) error {
+	req, err := helpers.GetJSONReq[Request](c)
+	if err != nil {
+		return err
+	}
+	res, err := proxies["{{ $key }}"].Send(req)
+	if err != nil {
+		return err
+	}
+	return helpers.SendJSONRes(*res, c)
+}
+{{- end }}
+
+{{- if .Aggregated }}
+func aggregated(c *fiber.Ctx) error {
+	req, err := helpers.GetJSONReq[ActionResponse](c)
+	if err != nil {
+		return err
+	}
+	var wg sync.WaitGroup
+	var mut sync.Mutex
+	responses := make(map[string]map[string]any)
+	for key, value := range proxies {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			res, err := value.Send(req)
+			mut.Lock()
+			defer mut.Unlock()
+			if err != nil {
+				c.Status(207)
+				responses[key] = map[string]any{
+					"error": err.Error(),
+				}
+				return
+			}
+			mapper, err := protoutil.Marshal(*res)
+			if err != nil {
+				c.Status(207)
+				responses[key] = map[string]any{
+					"error": err.Error(),
+				}
+				return
+			}
+			responses[key] = mapper
+		}()
+	}
+	wg.Wait()
+	return c.JSON(responses)
+}
+{{- end }}
+
+func init() {
+    proxies = make(map[string]proxy.NATSProxy[Response])
+	gateway := gateways.New("{{ .Route }}")
+	{{- range $key, $value := $.gateways }}
+    gateway.Add("{{ $key }}", "{{ .Method }}", {{ $key }})
+    proxies["{{ $key }}"] = proxy.New("{{ .ConnName }}", "{{ $value }}")
+    {{- end }}
+    {{- if .Aggregated }}
+    gateway.Add("", "{{ .Method }}", aggregated)
+    {{- end }}
+    gateways.Register(gateway)
+}

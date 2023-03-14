@@ -33,6 +33,13 @@ func EmptyIfNill(str *string) string {
 	return ""
 }
 
+func IfNill[T any](value *T, fallback T) T {
+	if value != nil {
+		return *value
+	}
+	return fallback
+}
+
 func CombinePath(path ...string) string {
 	buffer := bytes.NewBufferString("")
 	for i := 0; i < len(path); i++ {
