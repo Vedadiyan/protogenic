@@ -26,6 +26,18 @@ func RunProtoc() {
 	options := protogen.Options{}
 	options.Run(func(gen *protogen.Plugin) error {
 		gen.SupportedFeatures = gengo.SupportedFeatures
+		params := strings.Split(gen.Request.GetParameter(), ",")
+		var module string
+		for _, param := range params {
+			parts := strings.Split(param, "=")
+			if len(parts) != 2 {
+				panic("bad optional parameter")
+			}
+			if parts[0] == "Module" {
+				module = parts[1]
+				break
+			}
+		}
 		for name, f := range gen.FilesByPath {
 			_ = wd
 			_ = name
@@ -50,7 +62,7 @@ func RunProtoc() {
 					file := f.Desc.Imports().Get(i)
 					options := file.Options().(*descriptorpb.FileOptions)
 					goPackage := options.GetGoPackage()
-					exec := exec.Command(protogenic.CombinePath(wd, "protogenic2.exe"), "-f", file.Path())
+					exec := exec.Command(protogenic.CombinePath(wd, "protogenic2.exe"), "-f", file.Path(), "-m", module)
 					exec.Stderr = os.Stderr
 					exec.Stdout = os.Stdout
 					err := exec.Run()
@@ -78,7 +90,7 @@ func RunProtoc() {
 				}
 				fileStr := string(file)
 				for _, value := range fileMap {
-					fileStr = strings.ReplaceAll(fileStr, value, fmt.Sprintf("%s/%s", "OKKKKK", value))
+					fileStr = strings.ReplaceAll(fileStr, value, fmt.Sprintf("%s/%s", module, value))
 				}
 				err = os.WriteFile(protogenic.CombinePath(wd, goPath, finalFileName), []byte(fileStr), os.ModePerm)
 				if err != nil {
