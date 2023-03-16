@@ -62,7 +62,7 @@ func RunProtoc() {
 					file := f.Desc.Imports().Get(i)
 					options := file.Options().(*descriptorpb.FileOptions)
 					goPackage := options.GetGoPackage()
-					exec := exec.Command(protogenic.CombinePath(wd, "protogenic2.exe"), "-f", file.Path(), "-m", module)
+					exec := exec.Command(protogenic.CombinePath(wd, "protogenic.exe"), "-f", file.Path(), "-m", module)
 					exec.Stderr = os.Stderr
 					exec.Stdout = os.Stdout
 					err := exec.Run()
