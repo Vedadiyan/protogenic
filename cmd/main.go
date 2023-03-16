@@ -44,19 +44,19 @@ func RunProtoc() {
 			if !f.Generate {
 				continue
 			}
-			// err := protogenic.GenerateNats(gen, f)
-			// if err != nil {
-			// 	panic(err)
-			// }
-			// err = protogenic.GenerateAPIGateway(gen, f)
-			// if err != nil {
-			// 	panic(err)
-			// }
+			err := protogenic.GenerateNats(gen, f)
+			if err != nil {
+				panic(err)
+			}
+			err = protogenic.GenerateAPIGateway(gen, f)
+			if err != nil {
+				panic(err)
+			}
 			if len(f.Messages) > 0 {
-				// err = protogenic.GenerateTypescript(gen, f)
-				// if err != nil {
-				// 	panic(err)
-				// }
+				err = protogenic.GenerateTypescript(gen, f)
+				if err != nil {
+					panic(err)
+				}
 				fileMap := make(map[string]string)
 				for i := 0; i < f.Desc.Imports().Len(); i++ {
 					file := f.Desc.Imports().Get(i)

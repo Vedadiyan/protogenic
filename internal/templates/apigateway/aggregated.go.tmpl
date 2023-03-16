@@ -7,7 +7,6 @@ import (
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/gateways"
 	"github.com/vedadiyan/goal/pkg/proxy"
-	"google.golang.org/protobuf/proto"
 )
 
 type (
@@ -21,7 +20,7 @@ var (
 
 {{- range $key, $value := .Gateways }}
 func {{ $key }}(c *fiber.Ctx) error {
-	req, err := helpers.GetJSONReq[Request](c)
+	req, err := helpers.GetJSONReq[*Request](c)
 	if err != nil {
 		return err
 	}
@@ -33,9 +32,8 @@ func {{ $key }}(c *fiber.Ctx) error {
 }
 {{- end }}
 
-{{- if .IsAggregated }}
 func aggregated(c *fiber.Ctx) error {
-	req, err := helpers.GetJSONReq[Request](c)
+	req, err := helpers.GetJSONReq[*Request](c)
 	if err != nil {
 		return err
 	}
@@ -70,17 +68,14 @@ func aggregated(c *fiber.Ctx) error {
 	wg.Wait()
 	return c.JSON(responses)
 }
-{{- end }}
 
 func init() {
 	proxies = make(map[string]proxy.NATSProxy[Response])
 	gateway := gateways.New("{{ .Route }}")
 	{{- range $key, $value := .Gateways }}
     gateway.Add("{{ $key }}", "{{ $.Method }}" , {{ $key }})
-    proxies["{{ $key }}"] = proxy.New[Response]("{{ $.ConnName }}", "{{ $value }}")
+    proxies["{{ $key }}"] = proxy.New[*Response]("{{ $.ConnName }}", "{{ $value }}")
     {{- end }}
-    {{- if .IsAggregated }}
     gateway.Add("", "{{ $.Method }}", aggregated)
-    {{- end }}
     gateways.Register(gateway)
 }

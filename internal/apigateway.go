@@ -9,17 +9,34 @@ import (
 	rpc "github.com/vedadiyan/protogenic/internal/autogen"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
 
 	_ "embed"
 )
 
 var (
-	//go:embed templates/apigateway/apigateway.go.tmpl
-	_apigateway string
+	//go:embed templates/apigateway/aggregated.go.tmpl
+	_aggregatedApiGateway string
+	//go:embed templates/apigateway/loose.go.tmpl
+	_looseApiGateway string
 )
 
-type APIGatewayContext struct {
+type Gateway struct {
+	RequestType  string
+	ResponseType string
+	Namespace    string
+}
+
+type LooseAPIGatewayContext struct {
+	ImportPath string
+	ConnName   string
+	Route      string
+	Method     string
+	Gateways   map[string]Gateway
+}
+
+type AggregatedAPIGatewayContext struct {
 	ImportPath   string
 	ConnName     string
 	Route        string
@@ -27,47 +44,90 @@ type APIGatewayContext struct {
 	RequestType  string
 	ResponseType string
 	Gateways     map[string]string
-	IsAggregated bool
 }
 
 func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
-	apiGatewayTemplate, err := template.New("apigateway").Funcs(_funcs).Parse(_apigateway)
-	if err != nil {
-		return err
-	}
+	mapper := make(map[string]protoreflect.ProtoMessage)
+	var a rpc.APIGateway
+	mapper[""] = &a
 	for _, service := range file.Services {
-		for _, method := range service.Methods {
-			options := method.Desc.Options().(*descriptorpb.MethodOptions)
-			nats := proto.GetExtension(options, rpc.E_Nats).(*rpc.NATS)
-			http := proto.GetExtension(options, rpc.E_Http).([]*rpc.HTTP)
-			apiGateway := proto.GetExtension(options, rpc.E_ApiGateway).(*rpc.APIGateway)
-			_ = http
-
-			_ = apiGateway
-			gateways := make(map[string]string)
-			for _, http := range http {
-				gateways[http.Name] = fmt.Sprintf("%s.%s", nats.Namespace, http.Name)
+		serviceOptions := service.Desc.Options().(*descriptorpb.ServiceOptions)
+		nats := proto.GetExtension(serviceOptions, rpc.E_Nats).(*rpc.NATS)
+		apiGateway := proto.GetExtension(serviceOptions, rpc.E_ApiGateway).(*rpc.APIGateway)
+		if apiGateway.GetEnableAggregation() {
+			apiGatewayTemplate, err := template.New("aggregatedapigateway").Funcs(_funcs).Parse(_aggregatedApiGateway)
+			if err != nil {
+				return err
 			}
-			gateway := APIGatewayContext{
+			gateways := make(map[string]string)
+			requests := make(map[string]struct{})
+			responses := make(map[string]struct{})
+			for _, method := range service.Methods {
+				gateways[method.GoName] = fmt.Sprintf("%s.%s", nats.Namespace, strings.ToLower(method.GoName))
+				requests[method.Input.GoIdent.GoName] = struct{}{}
+				responses[method.Output.GoIdent.GoName] = struct{}{}
+			}
+			if len(requests) > 1 {
+				panic("all requests in an aggregated gateway should be of the same type")
+			}
+			if len(responses) > 1 {
+				panic("all responses in an aggregated should of the same type")
+			}
+			var requestType string
+			var responseType string
+			for key := range requests {
+				requestType = key
+			}
+			for key := range responses {
+				responseType = key
+			}
+			gateway := AggregatedAPIGatewayContext{
 				ImportPath:   string(file.GoPackageName),
 				ConnName:     nats.Connection,
 				Route:        apiGateway.Route,
 				Method:       IfNill(apiGateway.Method, "GET"),
-				RequestType:  method.Input.GoIdent.GoName,
-				ResponseType: method.Output.GoIdent.GoName,
+				RequestType:  requestType,
+				ResponseType: responseType,
 				Gateways:     gateways,
-				IsAggregated: true,
 			}
-			filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s_gateway.pb.go", service.GoName, method.GoName)
+			filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_gateway.pb.go", service.GoName)
 			svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 			var serverCode bytes.Buffer
-			err := apiGatewayTemplate.Execute(&serverCode, gateway)
+			err = apiGatewayTemplate.Execute(&serverCode, gateway)
 			if err != nil {
 				return err
 			}
 			svc.P(serverCode.String())
+			continue
 		}
-
+		apiGatewayTemplate, err := template.New("looseapigateway").Funcs(_funcs).Parse(_looseApiGateway)
+		if err != nil {
+			return err
+		}
+		gateways := make(map[string]Gateway)
+		for _, method := range service.Methods {
+			gateway := Gateway{
+				Namespace:    fmt.Sprintf("%s.%s", nats.Namespace, strings.ToLower(method.GoName)),
+				RequestType:  method.Input.GoIdent.GoName,
+				ResponseType: method.Output.GoIdent.GoName,
+			}
+			gateways[method.GoName] = gateway
+		}
+		gateway := LooseAPIGatewayContext{
+			ImportPath: string(file.GoPackageName),
+			ConnName:   nats.Connection,
+			Route:      apiGateway.Route,
+			Method:     IfNill(apiGateway.Method, "GET"),
+			Gateways:   gateways,
+		}
+		filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_gateway.pb.go", service.GoName)
+		svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
+		var serverCode bytes.Buffer
+		err = apiGatewayTemplate.Execute(&serverCode, gateway)
+		if err != nil {
+			return err
+		}
+		svc.P(serverCode.String())
 	}
 	return nil
 }
