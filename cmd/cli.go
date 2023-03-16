@@ -21,7 +21,7 @@ func (o Options) Run() {
 	if o.IncludePath != nil {
 		wd = *o.IncludePath
 	}
-	exec := exec.Command("protoc", "--plugin=protoc-gen-protogenic=./protogenic.exe", strings.Join(o.Files, " "), "--protogenic_out=./", fmt.Sprintf("--protogenic_opt=%s", wd))
+	exec := exec.Command("protoc", "--plugin=protoc-gen-protogenic=./protogenic2.exe", strings.Join(o.Files, " "), "--protogenic_out=./", fmt.Sprintf("--protogenic_opt=%s", wd))
 	exec.Stdout = os.Stdout
 	exec.Stderr = os.Stderr
 	err := exec.Run()
