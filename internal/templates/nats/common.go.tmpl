@@ -2,4 +2,6 @@
 
 package {{ .Package }}
 
-type {{ .Name | ToPascalCase }} func(rq *{{ .Request | ToPascalCase}}) (*{{ .Response }}, error)
+{{- range $x := .NatsServices }}
+type {{ $x.Name | ToPascalCase }} func(rq *{{ $x.Request | ToPascalCase}}) (*{{ $x.Response }}, error)
+{{- end }}

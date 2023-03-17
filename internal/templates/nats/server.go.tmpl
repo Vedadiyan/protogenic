@@ -4,16 +4,17 @@ package {{ .Package }}
 
 import "github.com/nats-io/nats.go"
 
-//go:generate autopilot microservice create -s {{ .Name | ToPascalCase }} -t {{ .Logger }} -p {{ .Name | ToLowerCase }} --request {{ .Request }} --response {{ .Response }} --import-path $GOGEN_PACKAGE
-func {{ .Name | ToPascalCase }}Server (conn *nats.EncodedConn, srv {{ .Name | ToPascalCase }} {{ if .Logger }}, logger func(err error) {{ end }}) (*nats.Subscription, error) { 
-	subs, err := {{ if .Queue }} conn.QueueSubscribe {{ else }} conn.Subscribe {{ end }}("{{ .Namespace | ToLowerCase }}" {{ if .Queue }}, "{{ .Queue | ToLowerCase }}" {{ end }}, func(subject string, reply string, rq *{{ .Request | ToPascalCase }}) {
+{{- range $x := .NatsServices}}
+//go:generate autopilot microservice create -s {{ $x.Name | ToPascalCase }} -t {{ $x.Logger }} -p {{ $x.Name | ToLowerCase }} --request {{ $x.Request }} --response {{ $x.Response }} --import-path $GOGEN_PACKAGE
+func {{ $x.Name | ToPascalCase }}Server (conn *nats.EncodedConn, srv {{ $x.Name | ToPascalCase }} {{ if $x.Logger }}, logger func(err error) {{ end }}) (*nats.Subscription, error) { 
+	subs, err := {{ if $x.Queue }} conn.QueueSubscribe {{ else }} conn.Subscribe {{ end }}("{{ $x.Namespace | ToLowerCase }}" {{ if $x.Queue }}, "{{ $x.Queue | ToLowerCase }}" {{ end }}, func(subject string, reply string, rq *{{ $x.Request | ToPascalCase }}) {
 		go func() {
 			rs, err := srv(rq)
 			if err != nil {
-				{{ if .Logger }}logger(err){{ end }}
+				{{ if $x.Logger }}logger(err){{ end }}
 				return
 			}
-			{{ if .Logger }}err = conn.Publish(reply, rs)
+			{{ if $x.Logger }}err = conn.Publish(reply, rs)
 			if err != nil {
 				logger(err)
 			}{{ else }}conn.Publish(reply, rs){{ end }}
@@ -21,3 +22,4 @@ func {{ .Name | ToPascalCase }}Server (conn *nats.EncodedConn, srv {{ .Name | To
 	})
 	return subs, err
 }
+{{- end }}

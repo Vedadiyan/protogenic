@@ -8,15 +8,18 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-//go:generate autopilot proxy -n {{ .Name | ToPascalCase }} -o $GOGEN_PACKAGE
-//go:generate autopilot aggregated-proxy -n {{ .Name | ToPascalCase }} -g $GROUP -o $GOGEN_PACKAGE
-func {{ .Name | ToPascalCase }}Client (conn *nats.EncodedConn, timeout time.Duration) {{ .Name | ToPascalCase }} {
-	return func(rq *{{ .Request | ToPascalCase }}) (*{{ .Response | ToPascalCase }}, error) {
-		var rs {{ .Response | ToPascalCase }}
-		err := conn.Request("{{ .Namespace | ToLowerCase }}", rq, &rs, timeout)
+{{- range $x := .NatsServices }}
+//go:generate autopilot proxy -n {{ $x.Name | ToPascalCase }} -o $GOGEN_PACKAGE
+//go:generate autopilot aggregated-proxy -n {{ $x.Name | ToPascalCase }} -g $GROUP -o $GOGEN_PACKAGE
+func {{ $x.Name | ToPascalCase }}Client (conn *nats.EncodedConn, timeout time.Duration) {{ $x.Name | ToPascalCase }} {
+	return func(rq *{{ $x.Request | ToPascalCase }}) (*{{ $x.Response | ToPascalCase }}, error) {
+		var rs {{ $x.Response | ToPascalCase }}
+		err := conn.Request("{{ $x.Namespace | ToLowerCase }}", rq, &rs, timeout)
 		if err != nil {
 			return nil, err
 		}
 		return &rs, nil
 	}
 }
+
+{{- end }}
