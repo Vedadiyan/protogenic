@@ -5,15 +5,22 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	flaggy "github.com/vedadiyan/flaggy/pkg"
 )
 
 type Options struct {
 	Files       []string `long:"--file" short:"-f" help:"The path to the .proto file"`
 	Module      string   `long:"--module" short:"-m" help:"The name of the Go module"`
 	IncludePath *string  `long:"--include-path" short:"-I" help:"Protoc include path"`
+	Help        bool     `long:"--help" short:"-h" help:"Shows help"`
 }
 
 func (o Options) Run() {
+	if o.Help {
+		flaggy.PrintHelp()
+		return
+	}
 	if o.Files == nil {
 		RunProtoc()
 		return

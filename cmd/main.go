@@ -22,12 +22,12 @@ func main() {
 }
 
 func RunProtoc() {
-	wd, _ := os.Getwd()
 	options := protogen.Options{}
 	options.Run(func(gen *protogen.Plugin) error {
 		gen.SupportedFeatures = gengo.SupportedFeatures
 		params := strings.Split(gen.Request.GetParameter(), ",")
 		var module string
+		var wd string
 		for _, param := range params {
 			parts := strings.Split(param, "=")
 			if len(parts) != 2 {
@@ -35,7 +35,10 @@ func RunProtoc() {
 			}
 			if parts[0] == "Module" {
 				module = parts[1]
-				break
+				continue
+			}
+			if parts[0] == "wd" {
+				wd = parts[1]
 			}
 		}
 		for name, f := range gen.FilesByPath {
