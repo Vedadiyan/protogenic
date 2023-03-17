@@ -35,6 +35,7 @@ type Nats struct {
 	ResponseMapper           string
 	CacheInterval            int
 	WebHeaderCollection      map[string]string
+	MethodName               string
 }
 
 type NatsContext struct {
@@ -42,7 +43,7 @@ type NatsContext struct {
 	Package      string
 }
 
-func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
+func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.File) error {
 	path, err := os.Getwd()
 	if err != nil {
 		return err
@@ -93,11 +94,12 @@ func GenerateNats(plugin *protogen.Plugin, file *protogen.File) error {
 						RequestMapper:            requestMapper,
 						ResponseMapper:           responseMapper,
 						WebHeaderCollection:      make(map[string]string),
+						MethodName:               method.GoName,
 					}
 					for _, webHeader := range http.Header {
 						natsService.WebHeaderCollection[webHeader.Key] = webHeader.Value
 					}
-					filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s.pb.go", service.GoName, method.GoName)
+					filename := moduleName + "/" + file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s.pb.go", service.GoName, method.GoName)
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := serviceTemplate.Execute(&serverCode, natsService)

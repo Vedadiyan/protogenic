@@ -10,54 +10,54 @@ import (
 )
 
 const (
-	_CN          = "{{ .ConnName }}"
-	_NS          = "{{ .Namespace }}"
-	_AUTH_SVC    = "{{ .AuthService }}"
-	_AUTH_SVC_CI = {{ .AuthServiceCacheInterval }}
-	_QUEUE       = "{{ .Queue }}"
-	_URL         = "{{ .Url }}"
-	_METHOD      = "{{ .Method }}"
+	_CN_{{ .MethodName | ToUpperCase }}          = "{{ .ConnName }}"
+	_NS_{{ .MethodName | ToUpperCase }}          = "{{ .Namespace }}"
+	_AUTH_SVC_{{ .MethodName | ToUpperCase }}   = "{{ .AuthService }}"
+	_AUTH_SVC_CI_{{ .MethodName | ToUpperCase }} = {{ .AuthServiceCacheInterval }}
+	_QUEUE_{{ .MethodName | ToUpperCase }}      = "{{ .Queue }}"
+	_URL_{{ .MethodName | ToUpperCase }}         = "{{ .Url }}"
+	_METHOD_{{ .MethodName | ToUpperCase }}    = "{{ .Method }}"
 )
 
 var (
-	_url       *http.UrlTemplate
-	_reqMapper []byte
-	_resMapper []byte
+	_url{{ .MethodName | ToPascalCase }}       *http.UrlTemplate
+	_reqMapper{{ .MethodName | ToPascalCase }} []byte
+	_resMapper{{ .MethodName | ToPascalCase }} []byte
 )
 
 type (
-	Request  = proto.Message
-	Response = proto.Message
+	Request{{ .MethodName | ToPascalCase }}  = proto.Message
+	Response{{ .MethodName | ToPascalCase }} = proto.Message
 )
 
-func handler(m Request) (Response, error) {
-	req, err := helpers.ToJSONReq(m, _reqMapper)
+func handler{{ .MethodName | ToPascalCase}}(m Request{{ .MethodName | ToPascalCase }}) (Response{{ .MethodName | ToPascalCase }}, error) {
+	req, err := helpers.ToJSONReq(m, _reqMapper{{ .MethodName | ToPascalCase }})
 	if err != nil {
 		return nil, err
 	}
-	url, err := _url.Url(req.RouteValues, req.QueryParams)
+	url, err := _url{{ .MethodName | ToPascalCase }}.Url(req.RouteValues, req.QueryParams)
 	if err != nil {
 		return nil, err
 	}
-	webHeaders, err := getWHC()
+	webHeaders, err := getWHC{{ .MethodName | ToPascalCase }}()
 	if err != nil {
 		return nil, err
 	}
-	res, err := http.Send(url, webHeaders, _METHOD, req.Body)
+	res, err := http.Send(url, webHeaders, _METHOD_{{ .MethodName | ToUpperCase }} , req.Body)
 	if err != nil {
 		return nil, err
 	}
-	return helpers.FromJSONRes[Response](res.Reader(), _resMapper)
+	return helpers.FromJSONRes[Response{{ .MethodName | ToPascalCase }}](res.Reader(), _resMapper{{ .MethodName | ToPascalCase }})
 }
 
-func getWHC() (http.IWebHeaderCollection, error) {
+func getWHC{{ .MethodName | ToPascalCase }}() (http.IWebHeaderCollection, error) {
 	whc := http.NewWebHeaderCollection()
 	{{- range $key, $value := .WebHeaderCollection }}
     whc.Add("{{ $key }}", "{{ $value }}")
     {{- end }}
-	if _AUTH_SVC != "" {
+	if _AUTH_SVC_{{ .MethodName | ToUpperCase }}!= "" {
 		webHeaders, err :=
-			helpers.GetAuthHeaders(_CN, _AUTH_SVC, _AUTH_SVC_CI)
+			helpers.GetAuthHeaders(_CN_{{ .MethodName | ToUpperCase }}, _AUTH_SVC_{{ .MethodName | ToUpperCase }} , _AUTH_SVC_CI_{{ .MethodName | ToUpperCase }})
 		if err != nil {
 			return nil, err
 		}
@@ -69,15 +69,15 @@ func getWHC() (http.IWebHeaderCollection, error) {
 }
 
 func init() {
-	_reqMapper = {{ .RequestMapper }}
-	_resMapper = {{ .ResponseMapper }}
-	_url = http.NewUrlTemplate(_URL)
+	_reqMapper{{ .MethodName | ToPascalCase }} = {{ .RequestMapper }}
+	_resMapper{{ .MethodName | ToPascalCase }} = {{ .ResponseMapper }}
+	_url{{ .MethodName | ToPascalCase }} = http.NewUrlTemplate(_URL_{{ .MethodName | ToUpperCase }})
 	service.Register(
 		service.New(
-			_CN,
-			_NS,
-			_QUEUE,
-			handler,
+			_CN_{{ .MethodName | ToUpperCase }},
+			_NS_{{ .MethodName | ToUpperCase }},
+			_QUEUE_{{ .MethodName | ToUpperCase }},
+			handler{{ .MethodName | ToPascalCase}},
 			service.WithCache(time.Hour),
 		),
 	)

@@ -1,0 +1,19 @@
+package main
+
+import (
+	helpers "github.com/vedadiyan/goal-helpers/pkg"
+	auto "github.com/vedadiyan/goal/pkg/config/auto"
+	"github.com/vedadiyan/goal/pkg/service"
+	 _ "{{ .Import }}"
+)
+
+func main() {
+	{{- range $key, $value := .NatsConns}}
+	helpers.AddNats("{{ $key }}", "{{ $value }}")
+	{{- end }}
+	{{- if .UseInfluxDb }}
+	helpers.UseInfluxDb("{{ .InlfuxDb }}", "{{ .ModuleName }}")
+	{{- end }}
+	auto.Bootstrap("{{ .ETCD }}")
+	service.Bootstrap()
+}

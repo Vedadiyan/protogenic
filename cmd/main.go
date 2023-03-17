@@ -47,7 +47,7 @@ func RunProtoc() {
 			if !f.Generate {
 				continue
 			}
-			err := protogenic.GenerateNats(gen, f)
+			err := protogenic.GenerateNats(module, gen, f)
 			if err != nil {
 				panic(err)
 			}
@@ -55,11 +55,15 @@ func RunProtoc() {
 			if err != nil {
 				panic(err)
 			}
+			err = protogenic.GenerateServer(module, gen, f)
+			if err != nil {
+				panic(err)
+			}
 			if len(f.Messages) > 0 {
-				err = protogenic.GenerateTypescript(gen, f)
-				if err != nil {
-					panic(err)
-				}
+				// err = protogenic.GenerateTypescript(gen, f)
+				// if err != nil {
+				// 	panic(err)
+				// }
 				fileMap := make(map[string]string)
 				for i := 0; i < f.Desc.Imports().Len(); i++ {
 					file := f.Desc.Imports().Get(i)
@@ -95,7 +99,16 @@ func RunProtoc() {
 				for _, value := range fileMap {
 					fileStr = strings.ReplaceAll(fileStr, value, fmt.Sprintf("%s/%s", module, value))
 				}
-				err = os.WriteFile(protogenic.CombinePath(wd, goPath, finalFileName), []byte(fileStr), os.ModePerm)
+				path := protogenic.CombinePath(module, strings.ReplaceAll(string(f.GoImportPath), "\"", ""))
+				err = os.MkdirAll(path, os.ModePerm)
+				if err != nil {
+					panic(err)
+				}
+				err = os.RemoveAll(protogenic.CombinePath(wd, strings.Split(goPath, "/")[0]))
+				if err != nil {
+					panic(err)
+				}
+				err = os.WriteFile(protogenic.CombinePath(path, finalFileName), []byte(fileStr), os.ModePerm)
 				if err != nil {
 					panic(err)
 				}
