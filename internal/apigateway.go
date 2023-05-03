@@ -63,7 +63,7 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 			requests := make(map[string]struct{})
 			responses := make(map[string]struct{})
 			for _, method := range service.Methods {
-				gateways[method.GoName] = fmt.Sprintf("%s.%s", nats.Namespace, strings.ToLower(method.GoName))
+				gateways[method.GoName] = strings.ToLower(fmt.Sprintf("%s.%s", nats.Namespace, method.GoName))
 				requests[method.Input.GoIdent.GoName] = struct{}{}
 				responses[method.Output.GoIdent.GoName] = struct{}{}
 			}

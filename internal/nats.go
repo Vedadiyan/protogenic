@@ -83,7 +83,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					natsService := Nats{
 						ImportPath:               string(file.GoPackageName),
 						ConnName:                 nats.Connection,
-						Namespace:                fmt.Sprintf("%s.%s", nats.Namespace, method.GoName),
+						Namespace:                strings.ToLower(fmt.Sprintf("%s.%s", nats.Namespace, method.GoName)),
 						Queue:                    EmptyIfNill(nats.Queue),
 						Url:                      http.Url,
 						Method:                   http.Method,

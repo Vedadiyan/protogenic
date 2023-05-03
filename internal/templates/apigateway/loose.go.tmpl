@@ -19,15 +19,16 @@ func {{ $key }}(c *fiber.Ctx) error {
         Request = {{ $value.RequestType }}
         Response = {{ $value.ResponseType }}
     )
-	req, err := helpers.GetJSONReq[*Request](c)
+	var req Request
+	err := helpers.GetJSONReq(c, &req)
 	if err != nil {
 		return err
 	}
-    proxy, ok := proxies["{{ $key }}"].(proxy.NATSProxy[*Response])
+    proxy, ok := proxies["{{ $key }}"].(*proxy.NATSProxy[*Response])
     if !ok {
         return fmt.Errorf("response cannot be cast to {{ $value.ResponseType }}")
     }
-	res, err := proxy.Send(req)
+	res, err := proxy.Send(&req)
 	if err != nil {
 		return err
 	}
@@ -40,7 +41,9 @@ func init() {
 	gateway := gateways.New("{{ .Route }}")
 	{{- range $key, $value := .Gateways }}
     gateway.Add("{{ $key }}", "{{ $.Method }}" , {{ $key }})
-    proxies["{{ $key }}"] = proxy.New[*{{ $value.ResponseType }}]("{{ $.ConnName }}", "{{ $value }}")
+    proxies["{{ $key }}"] = proxy.New("{{ $.ConnName }}", "{{ $value.Namespace }}", func() *{{$value.ResponseType}} {
+		return &{{$value.ResponseType}}{}
+	})
     {{- end }}
     gateways.Register(gateway)
 }

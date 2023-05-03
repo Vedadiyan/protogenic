@@ -26,11 +26,11 @@ var (
 )
 
 type (
-	Request{{ .MethodName | ToPascalCase }}  = proto.Message
-	Response{{ .MethodName | ToPascalCase }} = proto.Message
+	Request{{ .MethodName | ToPascalCase }}  = {{ .RequestType }}
+	Response{{ .MethodName | ToPascalCase }} = {{ .ResponseType}}
 )
 
-func handler{{ .MethodName | ToPascalCase}}(m Request{{ .MethodName | ToPascalCase }}) (Response{{ .MethodName | ToPascalCase }}, error) {
+func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalCase }}) (*Response{{ .MethodName | ToPascalCase }}, error) {
 	req, err := helpers.ToJSONReq(m, _reqMapper{{ .MethodName | ToPascalCase }})
 	if err != nil {
 		return nil, err
@@ -47,7 +47,12 @@ func handler{{ .MethodName | ToPascalCase}}(m Request{{ .MethodName | ToPascalCa
 	if err != nil {
 		return nil, err
 	}
-	return helpers.FromJSONRes[Response{{ .MethodName | ToPascalCase }}](res.Reader(), _resMapper{{ .MethodName | ToPascalCase }})
+	var response Response{{ .MethodName | ToPascalCase }}
+	err = helpers.FromJSONRes(res.Reader(), _resMapper{{ .MethodName | ToPascalCase }}, &response)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
 }
 
 func getWHC{{ .MethodName | ToPascalCase }}() (http.IWebHeaderCollection, error) {
@@ -78,6 +83,12 @@ func init() {
 			_NS_{{ .MethodName | ToUpperCase }},
 			_QUEUE_{{ .MethodName | ToUpperCase }},
 			handler{{ .MethodName | ToPascalCase}},
+			func() *Request{{ .MethodName | ToPascalCase }} {
+				return &Request{{ .MethodName | ToPascalCase }}{}
+			},
+			func() *Response{{ .MethodName | ToPascalCase }} {
+				return &Response{{ .MethodName | ToPascalCase }}{}
+			},
 			service.WithCache(time.Hour),
 		),
 	)

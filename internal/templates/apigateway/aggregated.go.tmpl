@@ -20,11 +20,12 @@ var (
 
 {{- range $key, $value := .Gateways }}
 func {{ $key }}(c *fiber.Ctx) error {
-	req, err := helpers.GetJSONReq[*Request](c)
+	var req Request
+	err := helpers.GetJSONReq(c, &req)
 	if err != nil {
 		return err
 	}
-	res, err := proxies["{{ $key }}"].Send(req)
+	res, err := proxies["{{ $key }}"].Send(&req)
 	if err != nil {
 		return err
 	}
@@ -74,7 +75,9 @@ func init() {
 	gateway := gateways.New("{{ .Route }}")
 	{{- range $key, $value := .Gateways }}
     gateway.Add("{{ $key }}", "{{ $.Method }}" , {{ $key }})
-    proxies["{{ $key }}"] = proxy.New[*Response]("{{ $.ConnName }}", "{{ $value }}")
+    proxies["{{ $key }}"] = proxy.New("{{ $.ConnName }}", "{{ $value.Namespace }}", func() *{{$value.ResponseType}} {
+		return &{{$value.ResponseType}}{}
+	})
     {{- end }}
     gateway.Add("", "{{ $.Method }}", aggregated)
     gateways.Register(gateway)
