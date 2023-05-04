@@ -234,6 +234,53 @@ func (x *HTTP) GetRequestMapper() *Mapper {
 	return nil
 }
 
+type GENQL struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Query *Mapper `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+}
+
+func (x *GENQL) Reset() {
+	*x = GENQL{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_options_rpc_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GENQL) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GENQL) ProtoMessage() {}
+
+func (x *GENQL) ProtoReflect() protoreflect.Message {
+	mi := &file_options_rpc_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GENQL.ProtoReflect.Descriptor instead.
+func (*GENQL) Descriptor() ([]byte, []int) {
+	return file_options_rpc_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GENQL) GetQuery() *Mapper {
+	if x != nil {
+		return x.Query
+	}
+	return nil
+}
+
 type APIGateway struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -248,7 +295,7 @@ type APIGateway struct {
 func (x *APIGateway) Reset() {
 	*x = APIGateway{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_options_rpc_proto_msgTypes[3]
+		mi := &file_options_rpc_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -261,7 +308,7 @@ func (x *APIGateway) String() string {
 func (*APIGateway) ProtoMessage() {}
 
 func (x *APIGateway) ProtoReflect() protoreflect.Message {
-	mi := &file_options_rpc_proto_msgTypes[3]
+	mi := &file_options_rpc_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -274,7 +321,7 @@ func (x *APIGateway) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use APIGateway.ProtoReflect.Descriptor instead.
 func (*APIGateway) Descriptor() ([]byte, []int) {
-	return file_options_rpc_proto_rawDescGZIP(), []int{3}
+	return file_options_rpc_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *APIGateway) GetRoute() string {
@@ -317,7 +364,7 @@ type RpcOptions struct {
 func (x *RpcOptions) Reset() {
 	*x = RpcOptions{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_options_rpc_proto_msgTypes[4]
+		mi := &file_options_rpc_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -330,7 +377,7 @@ func (x *RpcOptions) String() string {
 func (*RpcOptions) ProtoMessage() {}
 
 func (x *RpcOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_options_rpc_proto_msgTypes[4]
+	mi := &file_options_rpc_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -343,7 +390,7 @@ func (x *RpcOptions) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RpcOptions.ProtoReflect.Descriptor instead.
 func (*RpcOptions) Descriptor() ([]byte, []int) {
-	return file_options_rpc_proto_rawDescGZIP(), []int{4}
+	return file_options_rpc_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *RpcOptions) GetEvents() *RpcOptions_Events {
@@ -375,7 +422,7 @@ type Mapper struct {
 func (x *Mapper) Reset() {
 	*x = Mapper{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_options_rpc_proto_msgTypes[5]
+		mi := &file_options_rpc_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -388,7 +435,7 @@ func (x *Mapper) String() string {
 func (*Mapper) ProtoMessage() {}
 
 func (x *Mapper) ProtoReflect() protoreflect.Message {
-	mi := &file_options_rpc_proto_msgTypes[5]
+	mi := &file_options_rpc_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -401,7 +448,7 @@ func (x *Mapper) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Mapper.ProtoReflect.Descriptor instead.
 func (*Mapper) Descriptor() ([]byte, []int) {
-	return file_options_rpc_proto_rawDescGZIP(), []int{5}
+	return file_options_rpc_proto_rawDescGZIP(), []int{6}
 }
 
 func (m *Mapper) GetMapper() isMapper_Mapper {
@@ -449,13 +496,14 @@ type Definition struct {
 	// Types that are assignable to Definition:
 	//
 	//	*Definition_Http
+	//	*Definition_Genql
 	Definition isDefinition_Definition `protobuf_oneof:"definition"`
 }
 
 func (x *Definition) Reset() {
 	*x = Definition{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_options_rpc_proto_msgTypes[6]
+		mi := &file_options_rpc_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -468,7 +516,7 @@ func (x *Definition) String() string {
 func (*Definition) ProtoMessage() {}
 
 func (x *Definition) ProtoReflect() protoreflect.Message {
-	mi := &file_options_rpc_proto_msgTypes[6]
+	mi := &file_options_rpc_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -481,7 +529,7 @@ func (x *Definition) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Definition.ProtoReflect.Descriptor instead.
 func (*Definition) Descriptor() ([]byte, []int) {
-	return file_options_rpc_proto_rawDescGZIP(), []int{6}
+	return file_options_rpc_proto_rawDescGZIP(), []int{7}
 }
 
 func (m *Definition) GetDefinition() isDefinition_Definition {
@@ -498,6 +546,13 @@ func (x *Definition) GetHttp() *HTTP {
 	return nil
 }
 
+func (x *Definition) GetGenql() *GENQL {
+	if x, ok := x.GetDefinition().(*Definition_Genql); ok {
+		return x.Genql
+	}
+	return nil
+}
+
 type isDefinition_Definition interface {
 	isDefinition_Definition()
 }
@@ -506,7 +561,13 @@ type Definition_Http struct {
 	Http *HTTP `protobuf:"bytes,1,opt,name=http,proto3,oneof"`
 }
 
+type Definition_Genql struct {
+	Genql *GENQL `protobuf:"bytes,2,opt,name=genql,proto3,oneof"`
+}
+
 func (*Definition_Http) isDefinition_Definition() {}
+
+func (*Definition_Genql) isDefinition_Definition() {}
 
 type ETCD struct {
 	state         protoimpl.MessageState
@@ -519,7 +580,7 @@ type ETCD struct {
 func (x *ETCD) Reset() {
 	*x = ETCD{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_options_rpc_proto_msgTypes[7]
+		mi := &file_options_rpc_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -532,7 +593,7 @@ func (x *ETCD) String() string {
 func (*ETCD) ProtoMessage() {}
 
 func (x *ETCD) ProtoReflect() protoreflect.Message {
-	mi := &file_options_rpc_proto_msgTypes[7]
+	mi := &file_options_rpc_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -545,7 +606,7 @@ func (x *ETCD) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ETCD.ProtoReflect.Descriptor instead.
 func (*ETCD) Descriptor() ([]byte, []int) {
-	return file_options_rpc_proto_rawDescGZIP(), []int{7}
+	return file_options_rpc_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *ETCD) GetUrl() string {
@@ -567,7 +628,7 @@ type RpcOptions_Events struct {
 func (x *RpcOptions_Events) Reset() {
 	*x = RpcOptions_Events{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_options_rpc_proto_msgTypes[8]
+		mi := &file_options_rpc_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -580,7 +641,7 @@ func (x *RpcOptions_Events) String() string {
 func (*RpcOptions_Events) ProtoMessage() {}
 
 func (x *RpcOptions_Events) ProtoReflect() protoreflect.Message {
-	mi := &file_options_rpc_proto_msgTypes[8]
+	mi := &file_options_rpc_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -593,7 +654,7 @@ func (x *RpcOptions_Events) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RpcOptions_Events.ProtoReflect.Descriptor instead.
 func (*RpcOptions_Events) Descriptor() ([]byte, []int) {
-	return file_options_rpc_proto_rawDescGZIP(), []int{4, 0}
+	return file_options_rpc_proto_rawDescGZIP(), []int{5, 0}
 }
 
 func (x *RpcOptions_Events) GetOnSuccess() string {
@@ -623,7 +684,7 @@ type RpcOptions_Configure struct {
 func (x *RpcOptions_Configure) Reset() {
 	*x = RpcOptions_Configure{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_options_rpc_proto_msgTypes[9]
+		mi := &file_options_rpc_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -636,7 +697,7 @@ func (x *RpcOptions_Configure) String() string {
 func (*RpcOptions_Configure) ProtoMessage() {}
 
 func (x *RpcOptions_Configure) ProtoReflect() protoreflect.Message {
-	mi := &file_options_rpc_proto_msgTypes[9]
+	mi := &file_options_rpc_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -649,7 +710,7 @@ func (x *RpcOptions_Configure) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RpcOptions_Configure.ProtoReflect.Descriptor instead.
 func (*RpcOptions_Configure) Descriptor() ([]byte, []int) {
-	return file_options_rpc_proto_rawDescGZIP(), []int{4, 1}
+	return file_options_rpc_proto_rawDescGZIP(), []int{5, 1}
 }
 
 func (x *RpcOptions_Configure) GetCacheInterval() int64 {
@@ -782,7 +843,10 @@ var file_options_rpc_proto_rawDesc = []byte{
 	0x7a, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x63, 0x61, 0x63, 0x68, 0x65, 0x5f, 0x73, 0x65, 0x63,
 	0x6f, 0x6e, 0x64, 0x73, 0x42, 0x12, 0x0a, 0x10, 0x5f, 0x72, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
 	0x65, 0x5f, 0x6d, 0x61, 0x70, 0x70, 0x65, 0x72, 0x42, 0x11, 0x0a, 0x0f, 0x5f, 0x72, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x5f, 0x6d, 0x61, 0x70, 0x70, 0x65, 0x72, 0x22, 0xd2, 0x01, 0x0a, 0x0a,
+	0x75, 0x65, 0x73, 0x74, 0x5f, 0x6d, 0x61, 0x70, 0x70, 0x65, 0x72, 0x22, 0x2e, 0x0a, 0x05, 0x47,
+	0x45, 0x4e, 0x51, 0x4c, 0x12, 0x25, 0x0a, 0x05, 0x71, 0x75, 0x65, 0x72, 0x79, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x4d, 0x61,
+	0x70, 0x70, 0x65, 0x72, 0x52, 0x05, 0x71, 0x75, 0x65, 0x72, 0x79, 0x22, 0xd2, 0x01, 0x0a, 0x0a,
 	0x41, 0x50, 0x49, 0x47, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x72, 0x6f,
 	0x75, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x72, 0x6f, 0x75, 0x74, 0x65,
 	0x12, 0x1b, 0x0a, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
@@ -828,40 +892,43 @@ var file_options_rpc_proto_rawDesc = []byte{
 	0x4d, 0x61, 0x70, 0x70, 0x65, 0x72, 0x12, 0x14, 0x0a, 0x04, 0x66, 0x69, 0x6c, 0x65, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x04, 0x66, 0x69, 0x6c, 0x65, 0x12, 0x16, 0x0a, 0x05,
 	0x71, 0x75, 0x65, 0x72, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x05, 0x71,
-	0x75, 0x65, 0x72, 0x79, 0x42, 0x08, 0x0a, 0x06, 0x6d, 0x61, 0x70, 0x70, 0x65, 0x72, 0x22, 0x3f,
+	0x75, 0x65, 0x72, 0x79, 0x42, 0x08, 0x0a, 0x06, 0x6d, 0x61, 0x70, 0x70, 0x65, 0x72, 0x22, 0x67,
 	0x0a, 0x0a, 0x44, 0x65, 0x66, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x23, 0x0a, 0x04,
 	0x68, 0x74, 0x74, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6f, 0x70, 0x74,
 	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x48, 0x54, 0x54, 0x50, 0x48, 0x00, 0x52, 0x04, 0x68, 0x74, 0x74,
-	0x70, 0x42, 0x0c, 0x0a, 0x0a, 0x64, 0x65, 0x66, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x22,
-	0x18, 0x0a, 0x04, 0x45, 0x54, 0x43, 0x44, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x6c, 0x3a, 0x47, 0x0a, 0x04, 0x6e, 0x61, 0x74,
-	0x73, 0x12, 0x1f, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x62, 0x75, 0x66, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x4f, 0x70, 0x74, 0x69, 0x6f,
-	0x6e, 0x73, 0x18, 0xd0, 0x86, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6f, 0x70, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x4e, 0x41, 0x54, 0x53, 0x52, 0x04, 0x6e, 0x61, 0x74, 0x73, 0x88,
-	0x01, 0x01, 0x3a, 0x5a, 0x0a, 0x0b, 0x61, 0x70, 0x69, 0x5f, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61,
-	0x79, 0x12, 0x1f, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x62, 0x75, 0x66, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x4f, 0x70, 0x74, 0x69, 0x6f,
-	0x6e, 0x73, 0x18, 0xd2, 0x86, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x6f, 0x70, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x41, 0x50, 0x49, 0x47, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x52,
-	0x0a, 0x61, 0x70, 0x69, 0x47, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x88, 0x01, 0x01, 0x3a, 0x55,
-	0x0a, 0x0a, 0x64, 0x65, 0x66, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1e, 0x2e, 0x67,
-	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x4d,
-	0x65, 0x74, 0x68, 0x6f, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0xd1, 0x86, 0x03,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x44,
-	0x65, 0x66, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0a, 0x64, 0x65, 0x66, 0x69, 0x6e,
-	0x69, 0x74, 0x69, 0x6f, 0x6e, 0x3a, 0x59, 0x0a, 0x0b, 0x72, 0x70, 0x63, 0x5f, 0x6f, 0x70, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x12, 0x1e, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
+	0x70, 0x12, 0x26, 0x0a, 0x05, 0x67, 0x65, 0x6e, 0x71, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x0e, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x47, 0x45, 0x4e, 0x51, 0x4c,
+	0x48, 0x00, 0x52, 0x05, 0x67, 0x65, 0x6e, 0x71, 0x6c, 0x42, 0x0c, 0x0a, 0x0a, 0x64, 0x65, 0x66,
+	0x69, 0x6e, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x22, 0x18, 0x0a, 0x04, 0x45, 0x54, 0x43, 0x44, 0x12,
+	0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72,
+	0x6c, 0x3a, 0x47, 0x0a, 0x04, 0x6e, 0x61, 0x74, 0x73, 0x12, 0x1f, 0x2e, 0x67, 0x6f, 0x6f, 0x67,
+	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0xd0, 0x86, 0x03, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x4e, 0x41, 0x54,
+	0x53, 0x52, 0x04, 0x6e, 0x61, 0x74, 0x73, 0x88, 0x01, 0x01, 0x3a, 0x5a, 0x0a, 0x0b, 0x61, 0x70,
+	0x69, 0x5f, 0x67, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x12, 0x1f, 0x2e, 0x67, 0x6f, 0x6f, 0x67,
+	0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x65, 0x72, 0x76,
+	0x69, 0x63, 0x65, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0xd2, 0x86, 0x03, 0x20, 0x01,
+	0x28, 0x0b, 0x32, 0x13, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x41, 0x50, 0x49,
+	0x47, 0x61, 0x74, 0x65, 0x77, 0x61, 0x79, 0x52, 0x0a, 0x61, 0x70, 0x69, 0x47, 0x61, 0x74, 0x65,
+	0x77, 0x61, 0x79, 0x88, 0x01, 0x01, 0x3a, 0x55, 0x0a, 0x0a, 0x64, 0x65, 0x66, 0x69, 0x6e, 0x69,
+	0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1e, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x4d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x4f, 0x70, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x18, 0xd3, 0x86, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x6f,
-	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x52, 0x70, 0x63, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e,
-	0x73, 0x52, 0x0a, 0x72, 0x70, 0x63, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x88, 0x01, 0x01,
-	0x3a, 0x40, 0x0a, 0x04, 0x65, 0x74, 0x63, 0x64, 0x12, 0x1c, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c,
-	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x4f,
-	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0xa8, 0x46, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e,
-	0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x45, 0x54, 0x43, 0x44, 0x52, 0x04, 0x65, 0x74,
-	0x63, 0x64, 0x42, 0x0d, 0x5a, 0x0b, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x72, 0x70,
-	0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x69, 0x6f, 0x6e, 0x73, 0x18, 0xd1, 0x86, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x6f,
+	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x44, 0x65, 0x66, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x6f,
+	0x6e, 0x52, 0x0a, 0x64, 0x65, 0x66, 0x69, 0x6e, 0x69, 0x74, 0x69, 0x6f, 0x6e, 0x3a, 0x59, 0x0a,
+	0x0b, 0x72, 0x70, 0x63, 0x5f, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x1e, 0x2e, 0x67,
+	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x4d,
+	0x65, 0x74, 0x68, 0x6f, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0xd3, 0x86, 0x03,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e, 0x52,
+	0x70, 0x63, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x0a, 0x72, 0x70, 0x63, 0x4f, 0x70,
+	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x88, 0x01, 0x01, 0x3a, 0x40, 0x0a, 0x04, 0x65, 0x74, 0x63, 0x64,
+	0x12, 0x1c, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x46, 0x69, 0x6c, 0x65, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0xa8,
+	0x46, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2e,
+	0x45, 0x54, 0x43, 0x44, 0x52, 0x04, 0x65, 0x74, 0x63, 0x64, 0x42, 0x0d, 0x5a, 0x0b, 0x6f, 0x70,
+	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x33,
 }
 
 var (
@@ -876,44 +943,47 @@ func file_options_rpc_proto_rawDescGZIP() []byte {
 	return file_options_rpc_proto_rawDescData
 }
 
-var file_options_rpc_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_options_rpc_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_options_rpc_proto_goTypes = []interface{}{
 	(*NATS)(nil),                        // 0: options.NATS
 	(*HTTPHeader)(nil),                  // 1: options.HTTPHeader
 	(*HTTP)(nil),                        // 2: options.HTTP
-	(*APIGateway)(nil),                  // 3: options.APIGateway
-	(*RpcOptions)(nil),                  // 4: options.RpcOptions
-	(*Mapper)(nil),                      // 5: options.Mapper
-	(*Definition)(nil),                  // 6: options.Definition
-	(*ETCD)(nil),                        // 7: options.ETCD
-	(*RpcOptions_Events)(nil),           // 8: options.RpcOptions.Events
-	(*RpcOptions_Configure)(nil),        // 9: options.RpcOptions.Configure
-	(*descriptorpb.ServiceOptions)(nil), // 10: google.protobuf.ServiceOptions
-	(*descriptorpb.MethodOptions)(nil),  // 11: google.protobuf.MethodOptions
-	(*descriptorpb.FileOptions)(nil),    // 12: google.protobuf.FileOptions
+	(*GENQL)(nil),                       // 3: options.GENQL
+	(*APIGateway)(nil),                  // 4: options.APIGateway
+	(*RpcOptions)(nil),                  // 5: options.RpcOptions
+	(*Mapper)(nil),                      // 6: options.Mapper
+	(*Definition)(nil),                  // 7: options.Definition
+	(*ETCD)(nil),                        // 8: options.ETCD
+	(*RpcOptions_Events)(nil),           // 9: options.RpcOptions.Events
+	(*RpcOptions_Configure)(nil),        // 10: options.RpcOptions.Configure
+	(*descriptorpb.ServiceOptions)(nil), // 11: google.protobuf.ServiceOptions
+	(*descriptorpb.MethodOptions)(nil),  // 12: google.protobuf.MethodOptions
+	(*descriptorpb.FileOptions)(nil),    // 13: google.protobuf.FileOptions
 }
 var file_options_rpc_proto_depIdxs = []int32{
 	1,  // 0: options.HTTP.header:type_name -> options.HTTPHeader
-	5,  // 1: options.HTTP.response_mapper:type_name -> options.Mapper
-	5,  // 2: options.HTTP.request_mapper:type_name -> options.Mapper
-	8,  // 3: options.RpcOptions.events:type_name -> options.RpcOptions.Events
-	9,  // 4: options.RpcOptions.configure:type_name -> options.RpcOptions.Configure
-	2,  // 5: options.Definition.http:type_name -> options.HTTP
-	10, // 6: options.nats:extendee -> google.protobuf.ServiceOptions
-	10, // 7: options.api_gateway:extendee -> google.protobuf.ServiceOptions
-	11, // 8: options.definition:extendee -> google.protobuf.MethodOptions
-	11, // 9: options.rpc_options:extendee -> google.protobuf.MethodOptions
-	12, // 10: options.etcd:extendee -> google.protobuf.FileOptions
-	0,  // 11: options.nats:type_name -> options.NATS
-	3,  // 12: options.api_gateway:type_name -> options.APIGateway
-	6,  // 13: options.definition:type_name -> options.Definition
-	4,  // 14: options.rpc_options:type_name -> options.RpcOptions
-	7,  // 15: options.etcd:type_name -> options.ETCD
-	16, // [16:16] is the sub-list for method output_type
-	16, // [16:16] is the sub-list for method input_type
-	11, // [11:16] is the sub-list for extension type_name
-	6,  // [6:11] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	6,  // 1: options.HTTP.response_mapper:type_name -> options.Mapper
+	6,  // 2: options.HTTP.request_mapper:type_name -> options.Mapper
+	6,  // 3: options.GENQL.query:type_name -> options.Mapper
+	9,  // 4: options.RpcOptions.events:type_name -> options.RpcOptions.Events
+	10, // 5: options.RpcOptions.configure:type_name -> options.RpcOptions.Configure
+	2,  // 6: options.Definition.http:type_name -> options.HTTP
+	3,  // 7: options.Definition.genql:type_name -> options.GENQL
+	11, // 8: options.nats:extendee -> google.protobuf.ServiceOptions
+	11, // 9: options.api_gateway:extendee -> google.protobuf.ServiceOptions
+	12, // 10: options.definition:extendee -> google.protobuf.MethodOptions
+	12, // 11: options.rpc_options:extendee -> google.protobuf.MethodOptions
+	13, // 12: options.etcd:extendee -> google.protobuf.FileOptions
+	0,  // 13: options.nats:type_name -> options.NATS
+	4,  // 14: options.api_gateway:type_name -> options.APIGateway
+	7,  // 15: options.definition:type_name -> options.Definition
+	5,  // 16: options.rpc_options:type_name -> options.RpcOptions
+	8,  // 17: options.etcd:type_name -> options.ETCD
+	18, // [18:18] is the sub-list for method output_type
+	18, // [18:18] is the sub-list for method input_type
+	13, // [13:18] is the sub-list for extension type_name
+	8,  // [8:13] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_options_rpc_proto_init() }
@@ -959,7 +1029,7 @@ func file_options_rpc_proto_init() {
 			}
 		}
 		file_options_rpc_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*APIGateway); i {
+			switch v := v.(*GENQL); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -971,7 +1041,7 @@ func file_options_rpc_proto_init() {
 			}
 		}
 		file_options_rpc_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RpcOptions); i {
+			switch v := v.(*APIGateway); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -983,7 +1053,7 @@ func file_options_rpc_proto_init() {
 			}
 		}
 		file_options_rpc_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Mapper); i {
+			switch v := v.(*RpcOptions); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -995,7 +1065,7 @@ func file_options_rpc_proto_init() {
 			}
 		}
 		file_options_rpc_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Definition); i {
+			switch v := v.(*Mapper); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1007,7 +1077,7 @@ func file_options_rpc_proto_init() {
 			}
 		}
 		file_options_rpc_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ETCD); i {
+			switch v := v.(*Definition); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1019,7 +1089,7 @@ func file_options_rpc_proto_init() {
 			}
 		}
 		file_options_rpc_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RpcOptions_Events); i {
+			switch v := v.(*ETCD); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1031,6 +1101,18 @@ func file_options_rpc_proto_init() {
 			}
 		}
 		file_options_rpc_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RpcOptions_Events); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_options_rpc_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RpcOptions_Configure); i {
 			case 0:
 				return &v.state
@@ -1045,24 +1127,25 @@ func file_options_rpc_proto_init() {
 	}
 	file_options_rpc_proto_msgTypes[0].OneofWrappers = []interface{}{}
 	file_options_rpc_proto_msgTypes[2].OneofWrappers = []interface{}{}
-	file_options_rpc_proto_msgTypes[3].OneofWrappers = []interface{}{}
 	file_options_rpc_proto_msgTypes[4].OneofWrappers = []interface{}{}
-	file_options_rpc_proto_msgTypes[5].OneofWrappers = []interface{}{
+	file_options_rpc_proto_msgTypes[5].OneofWrappers = []interface{}{}
+	file_options_rpc_proto_msgTypes[6].OneofWrappers = []interface{}{
 		(*Mapper_File)(nil),
 		(*Mapper_Query)(nil),
 	}
-	file_options_rpc_proto_msgTypes[6].OneofWrappers = []interface{}{
+	file_options_rpc_proto_msgTypes[7].OneofWrappers = []interface{}{
 		(*Definition_Http)(nil),
+		(*Definition_Genql)(nil),
 	}
-	file_options_rpc_proto_msgTypes[8].OneofWrappers = []interface{}{}
 	file_options_rpc_proto_msgTypes[9].OneofWrappers = []interface{}{}
+	file_options_rpc_proto_msgTypes[10].OneofWrappers = []interface{}{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_options_rpc_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   11,
 			NumExtensions: 5,
 			NumServices:   0,
 		},

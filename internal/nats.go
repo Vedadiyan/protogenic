@@ -18,6 +18,8 @@ import (
 var (
 	//go:embed templates/nats/service.go.tmpl
 	_service string
+	//go:embed templates/nats/genql.go.tmpl
+	_genql string
 )
 
 type Nats struct {
@@ -38,9 +40,16 @@ type Nats struct {
 	MethodName               string
 }
 
-type NatsContext struct {
-	NatsServices []Nats
-	Package      string
+type GENQL struct {
+	ImportPath    string
+	ConnName      string
+	Namespace     string
+	Queue         string
+	RequestType   string
+	ResponseType  string
+	Query         string
+	CacheInterval int
+	MethodName    string
 }
 
 func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.File) error {
@@ -52,6 +61,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 	if err != nil {
 		return err
 	}
+	genqlTemplate, err := template.New("genql").Funcs(_funcs).Parse(_genql)
+	if err != nil {
+		return err
+	}
 	for _, service := range file.Services {
 		serviceOptions := service.Desc.Options().(*descriptorpb.ServiceOptions)
 		nats := proto.GetExtension(serviceOptions, rpc.E_Nats).(*rpc.NATS)
@@ -60,10 +73,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 			defnition := proto.GetExtension(methodOptions, rpc.E_Definition).(*rpc.Definition)
 			rpcOptions := proto.GetExtension(methodOptions, rpc.E_RpcOptions).(*rpc.RpcOptions)
 			_ = rpcOptions
-			http := defnition.GetHttp()
 			switch defnition.Definition.(type) {
 			case *rpc.Definition_Http:
 				{
+					http := defnition.GetHttp()
 					requestMapper := "[]byte{}"
 					if http.RequestMapper.GetFile() != "" {
 						file, err := os.ReadFile(CombinePath(path, http.RequestMapper.GetFile()))
@@ -103,6 +116,37 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := serviceTemplate.Execute(&serverCode, natsService)
+					if err != nil {
+						return err
+					}
+					svc.P(serverCode.String())
+				}
+			case *rpc.Definition_Genql:
+				{
+					http := defnition.GetGenql()
+					query := "[]byte{}"
+					if http.Query.GetFile() != "" {
+						file, err := os.ReadFile(CombinePath(path, http.Query.GetFile()))
+						if err != nil {
+							return err
+						}
+						query = StringToGoByteArray(string(file))
+					}
+					genqlService := GENQL{
+						ImportPath:   string(file.GoPackageName),
+						ConnName:     nats.Connection,
+						Namespace:    strings.ToLower(fmt.Sprintf("%s.%s", nats.Namespace, method.GoName)),
+						Queue:        EmptyIfNill(nats.Queue),
+						RequestType:  method.Input.GoIdent.GoName,
+						ResponseType: method.Output.GoIdent.GoName,
+						Query:        query,
+						MethodName:   method.GoName,
+					}
+
+					filename := moduleName + "/" + file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s.pb.go", service.GoName, method.GoName)
+					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
+					var serverCode bytes.Buffer
+					err := genqlTemplate.Execute(&serverCode, genqlService)
 					if err != nil {
 						return err
 					}
