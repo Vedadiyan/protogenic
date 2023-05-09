@@ -38,12 +38,15 @@ func {{ $key }}(c *fiber.Ctx) error {
 
 func init() {
 	proxies = make(map[string]any)
-	gateway := gateways.New("{{ .Route }}")
+	gateway := gateways.New("{{ .Route }}", func() {
+		{{- range $key, $value := .Gateways }}
+		proxies["{{ $key }}"] = proxy.New("{{ $.ConnName }}", "{{ $value.Namespace }}", func() *{{$value.ResponseType}} {
+			return &{{$value.ResponseType}}{}
+		})
+		{{- end }}
+	})
 	{{- range $key, $value := .Gateways }}
     gateway.Add("{{ $key }}", "{{ $.Method }}" , {{ $key }})
-    proxies["{{ $key }}"] = proxy.New("{{ $.ConnName }}", "{{ $value.Namespace }}", func() *{{$value.ResponseType}} {
-		return &{{$value.ResponseType}}{}
-	})
     {{- end }}
     gateways.Register(gateway)
 }

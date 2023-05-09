@@ -6,7 +6,6 @@ import (
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/http"
 	"github.com/vedadiyan/goal/pkg/service"
-	"google.golang.org/protobuf/proto"
 )
 
 const (
@@ -31,7 +30,11 @@ type (
 )
 
 func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalCase }}) (*Response{{ .MethodName | ToPascalCase }}, error) {
+	{{- if eq (index .WebHeaderCollection "content-type") "application/x-www-form-urlencoded"}} 
+	req, err := helpers.ToURLEncodedReq(m, _reqMapper{{ .MethodName | ToPascalCase }})
+	{{- else }}
 	req, err := helpers.ToJSONReq(m, _reqMapper{{ .MethodName | ToPascalCase }})
+	{{- end }}
 	if err != nil {
 		return nil, err
 	}

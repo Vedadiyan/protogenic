@@ -110,7 +110,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						MethodName:               method.GoName,
 					}
 					for _, webHeader := range http.Header {
-						natsService.WebHeaderCollection[webHeader.Key] = webHeader.Value
+						natsService.WebHeaderCollection[strings.ToLower(webHeader.Key)] = webHeader.Value
 					}
 					filename := moduleName + "/" + file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s.pb.go", service.GoName, method.GoName)
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
