@@ -22,6 +22,7 @@ func {{ $key }}(c *fiber.Ctx) error {
 	var req Request
 	err := helpers.GetJSONReq(c, &req)
 	if err != nil {
+		c.Status(fiber.StatusBadRequest)
 		return err
 	}
     proxy, ok := proxies["{{ $key }}"].(*proxy.NATSProxy[*Response])

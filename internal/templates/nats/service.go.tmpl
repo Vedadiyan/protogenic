@@ -92,7 +92,7 @@ func init() {
 			func() *Response{{ .MethodName | ToPascalCase }} {
 				return &Response{{ .MethodName | ToPascalCase }}{}
 			},
-			service.WithCache(time.Hour),
+			service.WithCache(time.Millisecond * {{ .CacheInterval }}),
 		),
 	)
 }

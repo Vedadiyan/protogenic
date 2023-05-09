@@ -43,7 +43,7 @@ type AggregatedAPIGatewayContext struct {
 	Method       string
 	RequestType  string
 	ResponseType string
-	Gateways     map[string]string
+	Gateways     map[string]Gateway
 }
 
 func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
@@ -59,11 +59,16 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 			if err != nil {
 				return err
 			}
-			gateways := make(map[string]string)
+			gateways := make(map[string]Gateway)
 			requests := make(map[string]struct{})
 			responses := make(map[string]struct{})
 			for _, method := range service.Methods {
-				gateways[method.GoName] = strings.ToLower(fmt.Sprintf("%s.%s", nats.Namespace, method.GoName))
+				gateway := Gateway{
+					Namespace:    fmt.Sprintf("%s.%s", nats.Namespace, strings.ToLower(method.GoName)),
+					RequestType:  method.Input.GoIdent.GoName,
+					ResponseType: method.Output.GoIdent.GoName,
+				}
+				gateways[method.GoName] = gateway
 				requests[method.Input.GoIdent.GoName] = struct{}{}
 				responses[method.Output.GoIdent.GoName] = struct{}{}
 			}

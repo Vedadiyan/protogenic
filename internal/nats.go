@@ -35,7 +35,7 @@ type Nats struct {
 	ResponseType             string
 	RequestMapper            string
 	ResponseMapper           string
-	CacheInterval            int
+	CacheInterval            int64
 	WebHeaderCollection      map[string]string
 	MethodName               string
 }
@@ -108,6 +108,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseMapper:           responseMapper,
 						WebHeaderCollection:      make(map[string]string),
 						MethodName:               method.GoName,
+						CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
 					}
 					for _, webHeader := range http.Header {
 						natsService.WebHeaderCollection[strings.ToLower(webHeader.Key)] = webHeader.Value
