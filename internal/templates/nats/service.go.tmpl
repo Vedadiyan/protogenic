@@ -50,6 +50,9 @@ func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalC
 	if err != nil {
 		return nil, err
 	}
+	if res.Status() > 399 || res.Status() <= 599 {
+		return nil, fmt.Errorf(`%d`, res.Status())
+	}
 	var response Response{{ .MethodName | ToPascalCase }}
 	err = helpers.FromJSONRes(res.Reader(), _resMapper{{ .MethodName | ToPascalCase }}, &response)
 	if err != nil {

@@ -30,6 +30,7 @@ func {{ $key }}(c *fiber.Ctx) error {
 	}
 	res, err := proxies["{{ $key }}"].Send(&req)
 	if err != nil {
+		c.Status(fiber.StatusBadGateway)
 		return err
 	}
 	return helpers.SendJSONRes(*res, c)
