@@ -9,7 +9,6 @@ import (
 	rpc "github.com/vedadiyan/protogenic/internal/autogen"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/reflect/protoreflect"
 	"google.golang.org/protobuf/types/descriptorpb"
 
 	_ "embed"
@@ -55,9 +54,6 @@ type AggregatedAPIGatewayContext struct {
 }
 
 func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
-	mapper := make(map[string]protoreflect.ProtoMessage)
-	var a rpc.APIGateway
-	mapper[""] = &a
 	for _, service := range file.Services {
 		serviceOptions := service.Desc.Options().(*descriptorpb.ServiceOptions)
 		nats := proto.GetExtension(serviceOptions, rpc.E_Nats).(*rpc.NATS)

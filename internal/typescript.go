@@ -2,12 +2,18 @@ package protogenic
 
 import (
 	"bytes"
+	"fmt"
+	"regexp"
+	"strings"
 	"text/template"
 
 	_ "embed"
 
+	rpc "github.com/vedadiyan/protogenic/internal/autogen"
 	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 var (
@@ -30,6 +36,15 @@ type Type struct {
 	Name   string
 	Fields []Field
 	IsEnum bool
+}
+
+type Client struct {
+	Name         string
+	RequestType  string
+	ResponseType string
+	Protected    bool
+	Method       string
+	URLParams    string
 }
 
 func getType(field *protogen.Field) (string, bool, bool) {
@@ -153,6 +168,38 @@ func GenerateTypescript(plugin *protogen.Plugin, file *protogen.File) error {
 		}
 		str := PostProcess(types)
 		g.P(str.String())
+	}
+	routeParamsPattern, err := regexp.Compile(`/:(\w+)/g`)
+	if err != nil {
+		return err
+	}
+	queryParamsPattern, err := regexp.Compile(`\?.*`)
+	if err != nil {
+		return err
+	}
+	for _, service := range file.Services {
+		serviceOptions := service.Desc.Options().(*descriptorpb.ServiceOptions)
+		apiGateway := proto.GetExtension(serviceOptions, rpc.E_ApiGateway).(*rpc.APIGateway)
+		routeParams := routeParamsPattern.FindAllString(apiGateway.Route, -1)
+		queryParams := queryParamsPattern.FindAllString(apiGateway.Route, -1)
+		urlParams := make([]string, 0)
+		urlParams = append(urlParams, routeParams...)
+		if len(queryParams) > 0 {
+			if len(queryParams) > 1 {
+				return fmt.Errorf("ambiguous query string detected")
+			}
+			queryParams = strings.Split(queryParams[0], "&")
+			urlParams = append(urlParams, queryParams...)
+		}
+		params := strings.Join(urlParams, ",")
+		for _, method := range service.Methods {
+			client := Client{}
+			client.URLParams = params
+			client.Name = method.GoName
+			client.RequestType = method.Input.GoIdent.GoName
+			client.ResponseType = method.Output.GoIdent.GoName
+			client.Protected = *apiGateway.Authenticated
+		}
 	}
 	return nil
 }
