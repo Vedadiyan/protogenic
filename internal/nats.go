@@ -38,6 +38,10 @@ type Nats struct {
 	CacheInterval            int64
 	WebHeaderCollection      map[string]string
 	MethodName               string
+
+	ProtogenicVersion string
+	CompilerVersion   string
+	File              string
 }
 
 type GENQL struct {
@@ -50,6 +54,10 @@ type GENQL struct {
 	Query         string
 	CacheInterval int
 	MethodName    string
+
+	ProtogenicVersion string
+	CompilerVersion   string
+	File              string
 }
 
 func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.File) error {
@@ -109,6 +117,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						WebHeaderCollection:      make(map[string]string),
 						MethodName:               method.GoName,
 						CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
+
+						ProtogenicVersion: GetVersion(),
+						CompilerVersion:   plugin.Request.CompilerVersion.String(),
+						File:              file.GoImportPath.String(),
 					}
 					for _, webHeader := range http.Header {
 						natsService.WebHeaderCollection[strings.ToLower(webHeader.Key)] = webHeader.Value
@@ -142,6 +154,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseType: method.Output.GoIdent.GoName,
 						Query:        query,
 						MethodName:   method.GoName,
+
+						ProtogenicVersion: GetVersion(),
+						CompilerVersion:   plugin.Request.CompilerVersion.String(),
+						File:              file.GoImportPath.String(),
 					}
 
 					filename := moduleName + "/" + file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s.pb.go", service.GoName, method.GoName)

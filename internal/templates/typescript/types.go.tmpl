@@ -94,8 +94,8 @@ export class {{ $i.Name }} {
             {{ 4 | Indent}}}
         {{- end }}
     {{ end }}
-    public serialize(): string {
-        return JSON.stringify(this.{{ "$data" }})
+    public serialize(except? : string[]): string {
+        return JSON.stringify(this.{{ "$data" }}, object.keys(this).filter(x=> !except.has(x)))
     }
     public static deserialize(json: string): {{ $i.Name }} {
         return new {{ $i.Name }}(JSON.parse(json))

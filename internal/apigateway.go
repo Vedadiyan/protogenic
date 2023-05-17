@@ -34,6 +34,10 @@ type LooseAPIGatewayContext struct {
 	Route      string
 	Method     string
 	Gateways   map[string]Gateway
+
+	ProtogenicVersion string
+	CompilerVersion   string
+	File              string
 }
 
 type AggregatedAPIGatewayContext struct {
@@ -44,6 +48,10 @@ type AggregatedAPIGatewayContext struct {
 	RequestType  string
 	ResponseType string
 	Gateways     map[string]Gateway
+
+	ProtogenicVersion string
+	CompilerVersion   string
+	File              string
 }
 
 func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
@@ -94,6 +102,10 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 				RequestType:  requestType,
 				ResponseType: responseType,
 				Gateways:     gateways,
+
+				ProtogenicVersion: GetVersion(),
+				CompilerVersion:   plugin.Request.CompilerVersion.String(),
+				File:              file.GoImportPath.String(),
 			}
 			filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_gateway.pb.go", service.GoName)
 			svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
@@ -124,6 +136,10 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 			Route:      apiGateway.Route,
 			Method:     IfNill(apiGateway.Method, "GET"),
 			Gateways:   gateways,
+
+			ProtogenicVersion: GetVersion(),
+			CompilerVersion:   plugin.Request.CompilerVersion.String(),
+			File:              file.GoImportPath.String(),
 		}
 		filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_gateway.pb.go", service.GoName)
 		svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)

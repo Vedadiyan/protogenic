@@ -1,0 +1,24 @@
+import axios from "axios";
+
+export async function clientAs(baseUrl: string, input : {{ .RequestType }}, {{ if .Protected }} token: string {{ end }}) : {{ .ResponseType }} | Error {
+    const config = {
+        method: '{{ .Method }}',
+        url: baseUrl,
+        headers: { 
+            {{ if .Protected }}
+            'Authorization': `Bearer ${token}`, 
+            {{ end }}
+            'Content-Type': 'application/json'
+        },
+    };
+    if(config.method.toLowerCase() != 'get') { 
+        config.data = input.serialize([{{ .URLParams }}]);
+    }
+    try {
+        const response = await axios(config);
+        return {{ .ResponseType }}.deserialize(response.data)
+    }
+    catch(exception) {
+        return exception.message
+    }
+}
