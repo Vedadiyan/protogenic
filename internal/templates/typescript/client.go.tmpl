@@ -1,8 +1,9 @@
 import axios from "axios";
+import { {{ $client.RequestType }}, {{ $client.ResponseType }}} from "./model.pb";
 
 {{ range $client := . }} 
 export async function {{ $client.Name | ToLowerCase }}ClientAsync(baseUrl: string, input : {{ $client.RequestType }} {{ if $client.Protected }}, token: string {{ end }}) : Promise<{{ $client.ResponseType }} | Error> {
-    let url = `${baseUrl}/{{ $client.URL }}/{{ $client.Name }}`
+    let url = `${baseUrl}{{ $client.URL }}/{{ $client.Name }}`
     {{ if $client.QueryParams }} 
     url += '?' + [{{ $client.QueryParams}}].filter(x=> input.$raw[x]).map(x=> `${x}=${input.$raw[x]}`).join('&')
     {{ end }}
