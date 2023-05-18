@@ -11,11 +11,11 @@ export async function {{ $client.Name | ToLowerCase }}ClientAsync(baseUrl: strin
         url: url,
         {{- if and (ne $client.Method "GET") (ne $client.Method "DELETE")}}
         data: input.serialize([{{ $client.URLParams }}]),
-        {{ end }}
+        {{- end }}
         headers: { 
-            {{ if $client.Protected }}
+            {{- if $client.Protected }}
             'Authorization': `Bearer ${token}`, 
-            {{ end }}
+            {{- end }}
             'Content-Type': 'application/json'
         }
     };
