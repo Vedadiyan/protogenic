@@ -181,7 +181,7 @@ func GenerateTypescript(plugin *protogen.Plugin, file *protogen.File) error {
 	if err != nil {
 		return err
 	}
-	clientTemplate, err := template.New("client").Parse(_client)
+	clientTemplate, err := template.New("client").Funcs(_funcs).Parse(_client)
 	if err != nil {
 		return err
 	}
