@@ -1,7 +1,7 @@
 import axios from "axios";
+import * as model from "./model.pb";
 {{ range $client := . }} 
-import { {{ $client.RequestType }}, {{ $client.ResponseType }}} from "./model.pb";
-export async function {{ $client.Name | ToLowerCase }}ClientAsync(baseUrl: string, input : {{ $client.RequestType }} {{ if $client.Protected }}, token: string {{ end }}) : Promise<{{ $client.ResponseType }} | Error> {
+export async function {{ $client.Name | ToLowerCase }}ClientAsync(baseUrl: string, input : model.{{ $client.RequestType }} {{ if $client.Protected }}, token: string {{ end }}) : Promise<model.{{ $client.ResponseType }} | Error> {
     let url = `${baseUrl}{{ $client.URL }}/{{ $client.Name }}`
     {{ if $client.QueryParams }} 
     url += '?' + [{{ $client.QueryParams}}].filter(x=> input.$raw[x]).map(x=> `${x}=${input.$raw[x]}`).join('&')
@@ -21,7 +21,7 @@ export async function {{ $client.Name | ToLowerCase }}ClientAsync(baseUrl: strin
     };
     try {
         const response = await axios(config);
-        return {{ $client.ResponseType }}.deserialize(response.data)
+        return model.{{ $client.ResponseType }}.deserialize(response.data)
     }
     catch(exception) {
         return exception as Error
