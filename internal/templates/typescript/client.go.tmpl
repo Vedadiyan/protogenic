@@ -10,7 +10,7 @@ export async function {{ $client.Name | ToLowerCase }}ClientAsync(baseUrl: strin
         method: '{{ $client.Method }}',
         url: url,
         {{- if and (ne $client.Method "GET") (ne $client.Method "DELETE")}}
-        data: input.serialize([{{ $client.URLParams }}]),
+        data: input.serialize({{ if $client.URLParams }}[{{ $client.URLParams }}]{{ end }}),
         {{- end }}
         headers: { 
             {{- if $client.Protected }}
