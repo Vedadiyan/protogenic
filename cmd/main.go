@@ -59,6 +59,10 @@ func RunProtoc() {
 			if err != nil {
 				panic(err)
 			}
+			err = protogenic.GenerateTypescript(gen, f)
+			if err != nil {
+				panic(err)
+			}
 			if len(f.Messages) > 0 {
 				// err = protogenic.GenerateTypescript(gen, f)
 				// if err != nil {

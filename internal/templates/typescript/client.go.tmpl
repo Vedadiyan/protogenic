@@ -1,26 +1,30 @@
 import axios from "axios";
 
 {{ range $client := . }} 
-export async function {{ $client.Name }}ClientAsync(baseUrl: string, input : {{ $client.RequestType }}, {{ if $client.Protected }} token: string {{ end }}) : {{ $client.ResponseType }} | Error {
+export async function {{ $client.Name | ToLowerCase }}ClientAsync(baseUrl: string, input : {{ $client.RequestType }} {{ if $client.Protected }}, token: string {{ end }}) : Promise<{{ $client.ResponseType }} | Error> {
+    let url = `${baseUrl}/{{ $client.URL }}/{{ $client.Name }}`
+    {{ if $client.QueryParams }} 
+    url += '?' + [{{ $client.QueryParams}}].filter(x=> input.$raw[x]).map(x=> `${x}=${input.$raw[x]}`).join('&')
+    {{ end }}
     const config = {
         method: '{{ $client.Method }}',
-        url: baseUrl,
+        url: url,
+        {{- if and (ne $client.Method "GET") (ne $client.Method "DELETE")}}
+        data: input.serialize([{{ $client.URLParams }}]),
+        {{ end }}
         headers: { 
             {{ if $client.Protected }}
             'Authorization': `Bearer ${token}`, 
             {{ end }}
             'Content-Type': 'application/json'
-        },
+        }
     };
-    if(config.method.toLowerCase() != 'get') { 
-        config.data = input.serialize([{{ $client.URLParams }}]);
-    }
     try {
         const response = await axios(config);
         return {{ $client.ResponseType }}.deserialize(response.data)
     }
     catch(exception) {
-        return exception.message
+        return exception as Error
     }
 }
 {{ end }}
