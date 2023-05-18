@@ -215,6 +215,7 @@ func GenerateTypescript(plugin *protogen.Plugin, file *protogen.File) error {
 			client := Client{}
 			client.URLParams = params
 			client.Name = method.GoName
+			client.Method = IfNill(apiGateway.Method, "GET")
 			client.RequestType = method.Input.GoIdent.GoName
 			client.ResponseType = method.Output.GoIdent.GoName
 			client.QueryParams = qParams
