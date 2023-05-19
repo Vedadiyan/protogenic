@@ -195,9 +195,9 @@ func GenerateTypescript(plugin *protogen.Plugin, file *protogen.File) error {
 		queryParamList := make([]string, 0)
 		route := apiGateway.Route
 		for _, routeParam := range routeParams {
-			routeParam = strings.TrimPrefix(routeParam, ":")
-			urlParamList = append(urlParamList, fmt.Sprintf(`'%s'`, routeParam))
-			route = strings.Replace(route, routeParam, fmt.Sprintf("input.%s", routeParam), 1)
+			_routeParam := strings.TrimPrefix(routeParam, ":")
+			urlParamList = append(urlParamList, fmt.Sprintf(`'%s'`, _routeParam))
+			route = strings.Replace(route, routeParam, fmt.Sprintf("${input.%s}", _routeParam), 1)
 		}
 		if len(queryParams) > 0 {
 			if len(queryParams) > 1 {
