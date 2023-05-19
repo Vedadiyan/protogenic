@@ -222,7 +222,7 @@ func GenerateTypescript(plugin *protogen.Plugin, file *protogen.File) error {
 			if apiGateway.Authenticated != nil {
 				client.Protected = *apiGateway.Authenticated
 			}
-			client.URL = apiGateway.Route
+			client.URL = route
 			clients = append(clients, client)
 		}
 		svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
