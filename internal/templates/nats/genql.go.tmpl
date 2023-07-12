@@ -9,7 +9,6 @@ import (
 	"time"
 
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
-	"github.com/vedadiyan/goal/pkg/http"
 	"github.com/vedadiyan/goal/pkg/service"
 )
 
@@ -29,12 +28,8 @@ type (
 )
 
 func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalCase }}) (*Response{{ .MethodName | ToPascalCase }}, error) {
-	res, err := helpers.ToJSONReq(m, _query{{ .MethodName | ToPascalCase }})
-	if err != nil {
-		return nil, err
-	}
 	var response Response{{ .MethodName | ToPascalCase }}
-	err = helpers.FromJSONRes(res.Reader(), _query{{ .MethodName | ToPascalCase }}, &response)
+	err := helpers.Exec(m, _query{{ .MethodName | ToPascalCase }, &response)
 	if err != nil {
 		return nil, err
 	}
