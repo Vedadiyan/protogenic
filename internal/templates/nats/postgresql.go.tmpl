@@ -18,7 +18,7 @@ const (
 	_CN_{{ .MethodName | ToUpperCase }}          = "{{ .ConnName }}"
 	_NS_{{ .MethodName | ToUpperCase }}          = "{{ .Namespace }}"
 	_QUEUE_{{ .MethodName | ToUpperCase }}       = "{{ .Queue }}"
-	_TYPE_{{ .MethodName | ToUpperCase }}        = "{{ .Type }}"
+	_TYPE_{{ .MethodName | ToUpperCase }}        = "{{ if .Type eq "command" }} postgres.COMMAND {{ else if .Type eq "query" }} postgres.QUERY {{ end }}"
 )
 
 var (
@@ -37,7 +37,7 @@ func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalC
 	if err != nil {
 		return nil, err
 	}
-	res, err := postgres.Handle(_DSN_{{ .MethodName | ToUpperCase }} , _TYPE_{{ .MethodName | ToUpperCase }} , _sql{{ .MethodName | ToPascalCase }}, arguments)
+	res, err := postgres.Handle(_DSN_{{ .MethodName | ToUpperCase }} , _TYPE_{{ .MethodName | ToUpperCase }} , string(_sql{{ .MethodName | ToPascalCase }}), arguments)
 	if err != nil {
 		return nil, err
 	}
