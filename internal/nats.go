@@ -20,6 +20,8 @@ var (
 	_service string
 	//go:embed templates/nats/genql.go.tmpl
 	_genql string
+	//go:embed templates/nats/postgresql.go.tmpl
+	_postgresql string
 )
 
 type Nats struct {
@@ -60,12 +62,36 @@ type GENQL struct {
 	File              string
 }
 
+type PostgreSQL struct {
+	ImportPath     string
+	ConnName       string
+	Dsn            string
+	Type           string
+	Sql            string
+	Namespace      string
+	Queue          string
+	RequestType    string
+	ResponseType   string
+	RequestMapper  string
+	ResponseMapper string
+	CacheInterval  int64
+	MethodName     string
+
+	ProtogenicVersion string
+	CompilerVersion   string
+	File              string
+}
+
 func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.File) error {
 	path, err := os.Getwd()
 	if err != nil {
 		return err
 	}
 	serviceTemplate, err := template.New("service").Funcs(_funcs).Parse(_service)
+	if err != nil {
+		return err
+	}
+	postgresqlTemplate, err := template.New("postgres").Funcs(_funcs).Parse(_postgresql)
 	if err != nil {
 		return err
 	}
@@ -86,7 +112,9 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 				{
 					http := defnition.GetHttp()
 					requestMapper := "[]byte{}"
-					if http.RequestMapper.GetFile() != "" {
+					if http.RequestMapper.GetSql() != "" {
+						requestMapper = StringToGoByteArray(http.RequestMapper.GetSql())
+					} else if http.RequestMapper.GetFile() != "" {
 						file, err := os.ReadFile(CombinePath(path, http.RequestMapper.GetFile()))
 						if err != nil {
 							return err
@@ -94,7 +122,9 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						requestMapper = StringToGoByteArray(string(file))
 					}
 					responseMapper := "[]byte{}"
-					if http.ResponseMapper.GetFile() != "" {
+					if http.ResponseMapper.GetSql() != "" {
+						responseMapper = StringToGoByteArray(http.ResponseMapper.GetSql())
+					} else if http.ResponseMapper.GetFile() != "" {
 						file, err := os.ReadFile(CombinePath(path, http.ResponseMapper.GetFile()))
 						if err != nil {
 							return err
@@ -134,11 +164,105 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					}
 					svc.P(serverCode.String())
 				}
+			case *rpc.Definition_Postgresql:
+				{
+					postgresql := defnition.GetPostgresql()
+					requestMapper := "[]byte{}"
+					if postgresql.RequestMapper.GetSql() != "" {
+						requestMapper = StringToGoByteArray(postgresql.RequestMapper.GetSql())
+					} else if postgresql.RequestMapper.GetFile() != "" {
+						file, err := os.ReadFile(CombinePath(path, postgresql.RequestMapper.GetFile()))
+						if err != nil {
+							return err
+						}
+						requestMapper = StringToGoByteArray(string(file))
+					}
+					responseMapper := "[]byte{}"
+					if postgresql.ResponseMapper.GetSql() != "" {
+						responseMapper = StringToGoByteArray(postgresql.ResponseMapper.GetSql())
+					} else if postgresql.ResponseMapper.GetFile() != "" {
+						file, err := os.ReadFile(CombinePath(path, postgresql.ResponseMapper.GetFile()))
+						if err != nil {
+							return err
+						}
+						responseMapper = StringToGoByteArray(string(file))
+					}
+					sql := "[]byte{}"
+					var _type string
+					switch postgresql.Sql.(type) {
+					case *rpc.PostgreSQL_Command:
+						{
+							_type = "command"
+							switch postgresql.GetCommand().Mapper.(type) {
+							case *rpc.Mapper_File:
+								{
+									file, err := os.ReadFile(CombinePath(path, postgresql.GetCommand().GetFile()))
+									if err != nil {
+										return err
+									}
+									sql = StringToGoByteArray(string(file))
+								}
+							case *rpc.Mapper_Sql:
+								{
+									sql = StringToGoByteArray(postgresql.GetCommand().GetSql())
+								}
+							}
+						}
+					case *rpc.PostgreSQL_Query:
+						{
+							_type = "query"
+							switch postgresql.GetQuery().Mapper.(type) {
+							case *rpc.Mapper_File:
+								{
+									file, err := os.ReadFile(CombinePath(path, postgresql.GetQuery().GetFile()))
+									if err != nil {
+										return err
+									}
+									sql = StringToGoByteArray(string(file))
+								}
+							case *rpc.Mapper_Sql:
+								{
+									sql = StringToGoByteArray(postgresql.GetQuery().GetSql())
+								}
+							}
+						}
+					}
+
+					postgresService := PostgreSQL{
+						ImportPath:     string(file.GoPackageName),
+						ConnName:       nats.Connection,
+						Dsn:            postgresql.GetDsn(),
+						Sql:            sql,
+						Type:           _type,
+						Namespace:      strings.ToLower(fmt.Sprintf("%s.%s", nats.Namespace, method.GoName)),
+						Queue:          EmptyIfNill(nats.Queue),
+						RequestType:    method.Input.GoIdent.GoName,
+						ResponseType:   method.Output.GoIdent.GoName,
+						RequestMapper:  requestMapper,
+						ResponseMapper: responseMapper,
+						CacheInterval:  IfNill(rpcOptions.Configure.CacheInterval, -1),
+						MethodName:     method.GoName,
+
+						ProtogenicVersion: GetVersion(),
+						CompilerVersion:   plugin.Request.CompilerVersion.String(),
+						File:              file.GoImportPath.String(),
+					}
+					filename := moduleName + "/" + file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s.pb.go", service.GoName, method.GoName)
+					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
+					var serverCode bytes.Buffer
+					err := postgresqlTemplate.Execute(&serverCode, postgresService)
+					if err != nil {
+						return err
+					}
+					svc.P(serverCode.String())
+				}
 			case *rpc.Definition_Genql:
 				{
 					http := defnition.GetGenql()
 					query := "[]byte{}"
-					if http.Query.GetFile() != "" {
+					if http.Query.GetSql() != "" {
+						query = StringToGoByteArray(http.Query.GetSql())
+					} else if http.Query.GetFile() != "" {
 						file, err := os.ReadFile(CombinePath(path, http.Query.GetFile()))
 						if err != nil {
 							return err

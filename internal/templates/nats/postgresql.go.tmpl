@@ -7,7 +7,6 @@ package {{ .ImportPath }}
 
 import (
 	"time"
-	"fmt"
 
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/db/postgres"
@@ -38,12 +37,12 @@ func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalC
 	if err != nil {
 		return nil, err
 	}
-	res, err := postgres.Handle(_DSN_, _TYPE_, _sql{{ .MethodName | ToPascalCase }}, arguments)
+	res, err := postgres.Handle(_DSN_{{ .MethodName | ToUpperCase }} , _TYPE_{{ .MethodName | ToUpperCase }} , _sql{{ .MethodName | ToPascalCase }}, arguments)
 	if err != nil {
 		return nil, err
 	}
 	var response Response{{ .MethodName | ToPascalCase }}
-	err := helpers.ExecFromMap(res, _resMapper{{ .MethodName | ToPascalCase }}, &response)
+	err = helpers.ExecFromMap(res, _resMapper{{ .MethodName | ToPascalCase }}, &response)
 	if err != nil {
 		return nil, err
 	}
