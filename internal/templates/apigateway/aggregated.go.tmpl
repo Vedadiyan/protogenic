@@ -10,10 +10,10 @@ import (
 )
 
 func init() {
-	gateways.Forward[BookingReq, BookingRes]("{{ .Route }}", map[string]string {
+	gateways.Forward[BookingReq, BookingRes]("{{ .Route }}", "{{ .Method }}",  map[string]string {
 		{{- range $key, $value := .Gateways }}
-			["{{ $value }}"] = "{{ $value.Namespace }}",
+			"{{ $key }}": "{{ $value.Namespace }}",
 		{{- end }}
-	}, "{{ $value.Namespace }}" {{ if $.UseMeta }}, gateways.UseMeta() {{ end }} {{ if $.UseValidation }}, gateways.UseValidation {{ end }})
+	}{{ if .UseMeta }}, gateways.UseMeta() {{ end }} {{ if .UseValidation }}, gateways.UseValidation {{ end }})
 }
 

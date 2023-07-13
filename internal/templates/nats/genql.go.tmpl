@@ -29,7 +29,7 @@ type (
 
 func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalCase }}) (*Response{{ .MethodName | ToPascalCase }}, error) {
 	var response Response{{ .MethodName | ToPascalCase }}
-	err := helpers.Exec(m, _query{{ .MethodName | ToPascalCase }, &response)
+	err := helpers.Exec(m, _query{{ .MethodName | ToPascalCase }}, &response)
 	if err != nil {
 		return nil, err
 	}
