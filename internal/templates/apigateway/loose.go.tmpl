@@ -10,5 +10,5 @@ import (
 )
 
 func init() {
-	gateways.Forward[BookingReq, BookingRes]("{{ .Route }}", "{{ $.Method }}", "{{ $value.Namespace }}")
+	gateways.Forward[BookingReq, BookingRes]("{{ .Route }}", "{{ $.Method }}", "{{ $value.Namespace }}" {{ if $.UseMeta }}, gateways.UseMeta() {{ end }} {{ if $.UseValidation }}, gateways.UseValidation {{ end }} )
 }

@@ -37,6 +37,8 @@ type LooseAPIGatewayContext struct {
 	ProtogenicVersion string
 	CompilerVersion   string
 	File              string
+	UseMeta           bool
+	UseValidation     bool
 }
 
 type AggregatedAPIGatewayContext struct {
@@ -51,6 +53,8 @@ type AggregatedAPIGatewayContext struct {
 	ProtogenicVersion string
 	CompilerVersion   string
 	File              string
+	UseMeta           bool
+	UseValidation     bool
 }
 
 func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
@@ -102,6 +106,8 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 				ProtogenicVersion: GetVersion(),
 				CompilerVersion:   plugin.Request.CompilerVersion.String(),
 				File:              file.GoImportPath.String(),
+				UseMeta:           IfNill(apiGateway.UseMeta, false),
+				UseValidation:     IfNill(apiGateway.UseValidation, false),
 			}
 			filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_gateway.pb.go", service.GoName)
 			svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
@@ -136,6 +142,8 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 			ProtogenicVersion: GetVersion(),
 			CompilerVersion:   plugin.Request.CompilerVersion.String(),
 			File:              file.GoImportPath.String(),
+			UseMeta:           IfNill(apiGateway.UseMeta, false),
+			UseValidation:     IfNill(apiGateway.UseValidation, false),
 		}
 		filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_gateway.pb.go", service.GoName)
 		svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
