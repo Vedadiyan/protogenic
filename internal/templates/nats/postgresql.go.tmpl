@@ -15,11 +15,12 @@ import (
 )
 
 const (
+	_DSN_{{ .MethodName | ToUpperCase }} 		 = "{{ .Dsn }}"
 	_CN_{{ .MethodName | ToUpperCase }}          = "{{ .ConnName }}"
 	_NS_{{ .MethodName | ToUpperCase }}          = "{{ .Namespace }}"
-	_QUEUE_{{ .MethodName | ToUpperCase }}      = "{{ .Queue }}"
+	_QUEUE_{{ .MethodName | ToUpperCase }}       = "{{ .Queue }}"
 	_URL_{{ .MethodName | ToUpperCase }}         = "{{ .Url }}"
-	_METHOD_{{ .MethodName | ToUpperCase }}    = "{{ .Method }}"
+	_METHOD_{{ .MethodName | ToUpperCase }}      = "{{ .Method }}"
 )
 
 var (
