@@ -18,7 +18,7 @@ const (
 	_CN_{{ .MethodName | ToUpperCase }}          = "{{ .ConnName }}"
 	_NS_{{ .MethodName | ToUpperCase }}          = "{{ .Namespace }}"
 	_QUEUE_{{ .MethodName | ToUpperCase }}       = "{{ .Queue }}"
-	_TYPE_{{ .MethodName | ToUpperCase }}        = "{{ if .Type eq "command" }} postgres.COMMAND {{ else if .Type eq "query" }} postgres.QUERY {{ end }}"
+	_TYPE_{{ .MethodName | ToUpperCase }}        = "{{ if eq .Type "command" }} postgres.COMMAND {{ else if eq .Type "query" }} postgres.QUERY {{ end }}"
 )
 
 var (
