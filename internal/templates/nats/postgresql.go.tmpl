@@ -18,7 +18,7 @@ const (
 	_CN_{{ .MethodName | ToUpperCase }}          = "{{ .ConnName }}"
 	_NS_{{ .MethodName | ToUpperCase }}          = "{{ .Namespace }}"
 	_QUEUE_{{ .MethodName | ToUpperCase }}       = "{{ .Queue }}"
-	_TYPE_{{ .MethodName | ToUpperCase }}        = "{{ if eq .Type "command" }} postgres.COMMAND {{ else if eq .Type "query" }} postgres.QUERY {{ end }}"
+	_TYPE_{{ .MethodName | ToUpperCase }}        = {{ if eq .Type "command" }} postgres.COMMAND {{ else if eq .Type "query" }} postgres.QUERY {{ end }}
 )
 
 var (
@@ -42,7 +42,7 @@ func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalC
 		return nil, err
 	}
 	var response Response{{ .MethodName | ToPascalCase }}
-	err = helpers.ExecFromMap(res, _resMapper{{ .MethodName | ToPascalCase }}, &response)
+	err = helpers.ExecFromMap(map[string]any {"data": res}, _resMapper{{ .MethodName | ToPascalCase }}, &response)
 	if err != nil {
 		return nil, err
 	}
