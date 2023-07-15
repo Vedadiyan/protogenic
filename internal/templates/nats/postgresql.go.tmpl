@@ -11,6 +11,9 @@ import (
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/db/postgres"
 	"github.com/vedadiyan/goal/pkg/service"
+	{{- range $index, $value := .ExtraImports }}
+	{{ $value }}
+	{{- end }}
 )
 
 const (

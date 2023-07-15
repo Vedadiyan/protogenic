@@ -64,6 +64,7 @@ type GENQL struct {
 
 type PostgreSQL struct {
 	ImportPath     string
+	ExtraImports   []string
 	ConnName       string
 	Dsn            string
 	Type           string
@@ -227,16 +228,23 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 							}
 						}
 					}
-
+					extraImports := make([]string, 0)
+					inputImportPathArray := strings.Split(strings.TrimPrefix(strings.TrimSuffix(method.Input.GoIdent.GoImportPath.String(), "\""), "\""), "/")
+					var inputPrefix string
+					if file.GoImportPath.String() != method.Input.GoIdent.GoImportPath.String() {
+						extraImports = append(extraImports, method.Input.GoIdent.GoImportPath.String())
+						inputPrefix = fmt.Sprintf("%s.", inputImportPathArray[len(inputImportPathArray)-1])
+					}
 					postgresService := PostgreSQL{
 						ImportPath:     string(file.GoPackageName),
+						ExtraImports:   extraImports,
 						ConnName:       nats.Connection,
 						Dsn:            postgresql.GetDsn(),
 						Sql:            sql,
 						Type:           _type,
 						Namespace:      strings.ToLower(fmt.Sprintf("%s.%s", nats.Namespace, method.GoName)),
 						Queue:          EmptyIfNill(nats.Queue),
-						RequestType:    method.Input.GoIdent.GoName,
+						RequestType:    fmt.Sprintf("%s%s", inputPrefix, method.Input.GoIdent.GoName),
 						ResponseType:   method.Output.GoIdent.GoName,
 						RequestMapper:  requestMapper,
 						ResponseMapper: responseMapper,
