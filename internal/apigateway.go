@@ -28,11 +28,12 @@ type Gateway struct {
 }
 
 type LooseAPIGatewayContext struct {
-	ImportPath string
-	ConnName   string
-	Route      string
-	Method     string
-	Gateways   map[string]Gateway
+	ImportPath   string
+	ExtraImports []string
+	ConnName     string
+	Route        string
+	Method       string
+	Gateways     map[string]Gateway
 
 	ProtogenicVersion string
 	CompilerVersion   string
@@ -43,6 +44,7 @@ type LooseAPIGatewayContext struct {
 
 type AggregatedAPIGatewayContext struct {
 	ImportPath   string
+	ExtraImports []string
 	ConnName     string
 	Route        string
 	Method       string
@@ -62,6 +64,7 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 		serviceOptions := service.Desc.Options().(*descriptorpb.ServiceOptions)
 		nats := proto.GetExtension(serviceOptions, rpc.E_Nats).(*rpc.NATS)
 		apiGateway := proto.GetExtension(serviceOptions, rpc.E_ApiGateway).(*rpc.APIGateway)
+
 		if apiGateway.GetEnableAggregation() {
 			apiGatewayTemplate, err := template.New("aggregatedapigateway").Funcs(_funcs).Parse(_aggregatedApiGateway)
 			if err != nil {
@@ -70,10 +73,17 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 			gateways := make(map[string]Gateway)
 			requests := make(map[string]struct{})
 			responses := make(map[string]struct{})
+			extraImports := make(map[string]bool, 0)
 			for _, method := range service.Methods {
+				inputImportPathArray := strings.Split(strings.TrimPrefix(strings.TrimSuffix(method.Input.GoIdent.GoImportPath.String(), "\""), "\""), "/")
+				var inputPrefix string
+				if file.GoImportPath.String() != method.Input.GoIdent.GoImportPath.String() {
+					extraImports[method.Input.GoIdent.GoImportPath.String()] = true
+					inputPrefix = fmt.Sprintf("%s.", inputImportPathArray[len(inputImportPathArray)-1])
+				}
 				gateway := Gateway{
 					Namespace:    fmt.Sprintf("%s.%s", nats.Namespace, strings.ToLower(method.GoName)),
-					RequestType:  method.Input.GoIdent.GoName,
+					RequestType:  fmt.Sprintf("%s%s", inputPrefix, method.Input.GoIdent.GoName),
 					ResponseType: method.Output.GoIdent.GoName,
 				}
 				gateways[method.GoName] = gateway
@@ -94,8 +104,13 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 			for key := range responses {
 				responseType = key
 			}
+			_extraImports := make([]string, len(extraImports))
+			for key := range extraImports {
+				_extraImports = append(_extraImports, key)
+			}
 			gateway := AggregatedAPIGatewayContext{
 				ImportPath:   string(file.GoPackageName),
+				ExtraImports: _extraImports,
 				ConnName:     nats.Connection,
 				Route:        apiGateway.Route,
 				Method:       IfNill(apiGateway.Method, "GET"),
@@ -124,20 +139,32 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 			return err
 		}
 		gateways := make(map[string]Gateway)
+		extraImports := make(map[string]bool)
 		for _, method := range service.Methods {
+			inputImportPathArray := strings.Split(strings.TrimPrefix(strings.TrimSuffix(method.Input.GoIdent.GoImportPath.String(), "\""), "\""), "/")
+			var inputPrefix string
+			if file.GoImportPath.String() != method.Input.GoIdent.GoImportPath.String() {
+				extraImports[method.Input.GoIdent.GoImportPath.String()] = true
+				inputPrefix = fmt.Sprintf("%s.", inputImportPathArray[len(inputImportPathArray)-1])
+			}
 			gateway := Gateway{
 				Namespace:    fmt.Sprintf("%s.%s", nats.Namespace, strings.ToLower(method.GoName)),
-				RequestType:  method.Input.GoIdent.GoName,
+				RequestType:  fmt.Sprintf("%s%s", inputPrefix, method.Input.GoIdent.GoName),
 				ResponseType: method.Output.GoIdent.GoName,
 			}
 			gateways[method.GoName] = gateway
 		}
+		_extraImports := make([]string, len(extraImports))
+		for key := range extraImports {
+			_extraImports = append(_extraImports, key)
+		}
 		gateway := LooseAPIGatewayContext{
-			ImportPath: string(file.GoPackageName),
-			ConnName:   nats.Connection,
-			Route:      apiGateway.Route,
-			Method:     IfNill(apiGateway.Method, "GET"),
-			Gateways:   gateways,
+			ImportPath:   string(file.GoPackageName),
+			ExtraImports: _extraImports,
+			ConnName:     nats.Connection,
+			Route:        apiGateway.Route,
+			Method:       IfNill(apiGateway.Method, "GET"),
+			Gateways:     gateways,
 
 			ProtogenicVersion: GetVersion(),
 			CompilerVersion:   plugin.Request.CompilerVersion.String(),

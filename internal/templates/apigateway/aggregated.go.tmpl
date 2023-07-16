@@ -7,6 +7,9 @@ package {{ .ImportPath }}
 
 import (
 	"github.com/vedadiyan/goal/pkg/gateways"
+	{{- range $index, $value := .ExtraImports }}
+	{{ $value }}
+	{{- end }}
 )
 
 func init() {
