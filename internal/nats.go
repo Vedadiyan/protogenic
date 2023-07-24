@@ -24,7 +24,13 @@ var (
 	_postgresql string
 )
 
+type Callback struct {
+	OnSuccess []string
+	OnError   []string
+}
+
 type Nats struct {
+	Callback
 	ImportPath               string
 	ConnName                 string
 	Namespace                string
@@ -47,6 +53,7 @@ type Nats struct {
 }
 
 type GENQL struct {
+	Callback
 	ImportPath    string
 	ConnName      string
 	Namespace     string
@@ -63,6 +70,7 @@ type GENQL struct {
 }
 
 type PostgreSQL struct {
+	Callback
 	ImportPath     string
 	ExtraImports   []string
 	ConnName       string
@@ -148,7 +156,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						WebHeaderCollection:      make(map[string]string),
 						MethodName:               method.GoName,
 						CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
-
+						Callback: Callback{
+							OnSuccess: rpcOptions.Events.OnSuccess,
+							OnError:   rpcOptions.Events.OnFailure,
+						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),
@@ -250,7 +261,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseMapper: responseMapper,
 						CacheInterval:  IfNill(rpcOptions.Configure.CacheInterval, -1),
 						MethodName:     method.GoName,
-
+						Callback: Callback{
+							OnSuccess: rpcOptions.Events.OnSuccess,
+							OnError:   rpcOptions.Events.OnFailure,
+						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),
@@ -286,7 +300,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseType: method.Output.GoIdent.GoName,
 						Query:        query,
 						MethodName:   method.GoName,
-
+						Callback: Callback{
+							OnSuccess: rpcOptions.Events.OnSuccess,
+							OnError:   rpcOptions.Events.OnFailure,
+						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),

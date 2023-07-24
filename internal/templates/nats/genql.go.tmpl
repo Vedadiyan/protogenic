@@ -51,6 +51,20 @@ func init() {
 				return &Response{{ .MethodName | ToPascalCase }}{}
 			},
 			service.WithCache(time.Hour),
+			{{- if .Callback.OnSuccess }}
+			service.WithOnSuccessCallBacks(
+				{{- range $item :=  .Callback.OnSuccess }}
+					"{{$item}}",
+				{{- end }}
+			),
+			{{- end }}
+			{{- if .Callback.OnError }}
+			service.WithOnErrorCallBacks(
+				{{- range $item :=  .Callback.OnError }}
+					"{{$item}}",
+				{{- end }}
+			),
+			{{- end }}
 		),
 	)
 }
