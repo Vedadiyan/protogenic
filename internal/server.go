@@ -70,10 +70,13 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 		}
 	})
 	server := Server{
-		NatsConns:   natsConns,
-		UseInfluxDb: false,
-		ETCD:        etcd.Url,
-		Import:      fmt.Sprintf("%s/%s", moduleName, strings.ReplaceAll(string(file.GoImportPath), "\"", "")),
+		NatsConns:     natsConns,
+		PostgresConns: postgresConns,
+		RedisConns:    redisConns,
+		MongoConns:    mongoConns,
+		UseInfluxDb:   false,
+		ETCD:          etcd.Url,
+		Import:        fmt.Sprintf("%s/%s", moduleName, strings.ReplaceAll(string(file.GoImportPath), "\"", "")),
 	}
 	path := CombinePath(moduleName, "cmd")
 	err = os.MkdirAll(path, os.ModePerm)

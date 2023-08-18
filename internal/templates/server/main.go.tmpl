@@ -8,16 +8,16 @@ import (
 )
 
 func init() {
-	{{- range _, $key := .NatsConns}}
+	{{- range $i, $key := .NatsConns}}
 	helpers.AddNats("{{ $key }}")
 	{{- end }}
-	{{- range _, $key := .PostgresConns}}
+	{{- range $i, $key := .PostgresConns}}
 	helpers.AddPostgres("{{ $key }}")
 	{{- end }}
-	{{- range _, $key := .RedisConns}}
+	{{- range $i, $key := .RedisConns}}
 	helpers.AddRedis("{{ $key }}")
 	{{- end }}	
-	{{- range _, $key := .MongoConns}}
+	{{- range $i, $key := .MongoConns}}
 	helpers.AddMongo("{{ $key }}")
 	{{- end }}	
 	{{- if .UseInfluxDb }}

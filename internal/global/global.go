@@ -22,26 +22,26 @@ func init() {
 }
 
 func Register(dependencyType DEPENDENCY_TYPES, key string) {
-	_mut.RLock()
-	defer _mut.Unlock()
+	// _mut.RLock()
+	// defer _mut.Unlock()
 	dt, ok := _dependencies[dependencyType]
 	if !ok {
-		_mut.Lock()
-		_dependencies[dependencyType] = make(map[string]bool)
-		_mut.Unlock()
+		//_mut.Lock()
+		dt = make(map[string]bool)
+		//_mut.Unlock()
 	}
 	_, ok = dt[key]
 	if !ok {
-		_mut.Lock()
+		//_mut.Lock()
 		dt[key] = true
 		_dependencies[dependencyType] = dt
-		_mut.Unlock()
+		//_mut.Unlock()
 	}
 }
 
 func ForEach(callback func(dependencyType DEPENDENCY_TYPES, key string)) {
-	_mut.RLock()
-	defer _mut.RUnlock()
+	//_mut.RLock()
+	//defer _mut.RUnlock()
 	for dt, value := range _dependencies {
 		for key := range value {
 			callback(dt, key)
