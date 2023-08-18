@@ -7,13 +7,25 @@ import (
 	 _ "{{ .Import }}"
 )
 
-func main() {
-	{{- range $key, $value := .NatsConns}}
-	helpers.AddNats("{{ $key }}", "{{ $value }}")
+func init() {
+	{{- range _, $key := .NatsConns}}
+	helpers.AddNats("{{ $key }}")
 	{{- end }}
+	{{- range _, $key := .PostgresConns}}
+	helpers.AddPostgres("{{ $key }}")
+	{{- end }}
+	{{- range _, $key := .RedisConns}}
+	helpers.AddRedis("{{ $key }}")
+	{{- end }}	
+	{{- range _, $key := .MongoConns}}
+	helpers.AddMongo("{{ $key }}")
+	{{- end }}	
 	{{- if .UseInfluxDb }}
-	helpers.UseInfluxDb("{{ .InlfuxDb }}", "{{ .ModuleName }}")
+	helpers.AddInfluxDb("{{ .InlfuxDb }}", "{{ .ModuleName }}")
 	{{- end }}
+}
+
+func main() {
 	auto.Bootstrap("{{ .ETCD }}")
 	service.Bootstrap()
 }

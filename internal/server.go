@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	rpc "github.com/vedadiyan/protogenic/internal/autogen"
+	"github.com/vedadiyan/protogenic/internal/global"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -22,12 +23,15 @@ var (
 )
 
 type Server struct {
-	NatsConns   map[string]string
-	UseInfluxDb bool
-	InfluxDb    string
-	ModuleName  string
-	ETCD        string
-	Import      string
+	NatsConns     []string
+	PostgresConns []string
+	RedisConns    []string
+	MongoConns    []string
+	UseInfluxDb   bool
+	InfluxDb      string
+	ModuleName    string
+	ETCD          string
+	Import        string
 }
 
 func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.File) error {
@@ -40,12 +44,31 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 	}
 	fileOptions := file.Desc.Options().(*descriptorpb.FileOptions)
 	etcd := proto.GetExtension(fileOptions, rpc.E_Etcd).(*rpc.ETCD)
-	natsConns := make(map[string]string)
+	natsConns := make([]string, 0)
 	for _, service := range file.Services {
 		serviceOptions := service.Desc.Options().(*descriptorpb.ServiceOptions)
 		nats := proto.GetExtension(serviceOptions, rpc.E_Nats).(*rpc.NATS)
-		natsConns[nats.Connection] = service.GoName
+		natsConns = append(natsConns, nats.Connection)
 	}
+	postgresConns := make([]string, 0)
+	redisConns := make([]string, 0)
+	mongoConns := make([]string, 0)
+	global.ForEach(func(dependencyType global.DEPENDENCY_TYPES, key string) {
+		switch dependencyType {
+		case global.POSTGRES:
+			{
+				postgresConns = append(postgresConns, key)
+			}
+		case global.REDIS:
+			{
+				redisConns = append(redisConns, key)
+			}
+		case global.MONGO:
+			{
+				mongoConns = append(mongoConns, key)
+			}
+		}
+	})
 	server := Server{
 		NatsConns:   natsConns,
 		UseInfluxDb: false,

@@ -8,6 +8,7 @@ import (
 	"text/template"
 
 	rpc "github.com/vedadiyan/protogenic/internal/autogen"
+	"github.com/vedadiyan/protogenic/internal/global"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -140,6 +141,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						}
 						responseMapper = StringToGoByteArray(string(file))
 					}
+					global.Register(global.NATS, nats.Connection)
 					natsService := Nats{
 						ImportPath:               string(file.GoPackageName),
 						ConnName:                 nats.Connection,
@@ -246,6 +248,8 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						extraImports = append(extraImports, method.Input.GoIdent.GoImportPath.String())
 						inputPrefix = fmt.Sprintf("%s.", inputImportPathArray[len(inputImportPathArray)-1])
 					}
+					global.Register(global.NATS, nats.Connection)
+					global.Register(global.POSTGRES, postgresql.GetDsn())
 					postgresService := PostgreSQL{
 						ImportPath:     string(file.GoPackageName),
 						ExtraImports:   extraImports,
@@ -291,6 +295,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						}
 						query = StringToGoByteArray(string(file))
 					}
+					global.Register(global.NATS, nats.Connection)
 					genqlService := GENQL{
 						ImportPath:   string(file.GoPackageName),
 						ConnName:     nats.Connection,
