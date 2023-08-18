@@ -53,30 +53,37 @@ func RunProtoc() {
 			if !f.Generate {
 				continue
 			}
-			if _, ok := features["service"]; ok {
-				err := protogenic.GenerateNats(module, gen, f)
-				if err != nil {
-					panic(err)
+			if len(f.Services) > 0 {
+				if _, ok := features["service"]; ok {
+					err := protogenic.GenerateNats(module, gen, f)
+					if err != nil {
+						panic(err)
+					}
+				}
+				if _, ok := features["api_gateway"]; ok {
+					err := protogenic.GenerateAPIGateway(gen, f)
+					if err != nil {
+						panic(err)
+					}
+				}
+				if _, ok := features["server"]; ok {
+					err := protogenic.GenerateServer(module, gen, f)
+					if err != nil {
+						panic(err)
+					}
+				}
+				if _, ok := features["client"]; ok {
+					err := protogenic.GenerateTypescript(gen, f)
+					if err != nil {
+						panic(err)
+					}
 				}
 			}
-			if _, ok := features["api_gateway"]; ok {
-				err := protogenic.GenerateAPIGateway(gen, f)
-				if err != nil {
-					panic(err)
-				}
-			}
-			if _, ok := features["server"]; ok {
-				err := protogenic.GenerateServer(module, gen, f)
-				if err != nil {
-					panic(err)
-				}
-			}
-			if _, ok := features["client"]; ok {
-				err := protogenic.GenerateTypescript(gen, f)
-				if err != nil {
-					panic(err)
-				}
-			}
+			// if len(f.Messages) > 0 {
+			// err = protogenic.GenerateTypescript(gen, f)
+			// if err != nil {
+			// 	panic(err)
+			// }
 			fileMap := make(map[string]string)
 			for i := 0; i < f.Desc.Imports().Len(); i++ {
 				file := f.Desc.Imports().Get(i)
@@ -91,45 +98,40 @@ func RunProtoc() {
 				}
 				fileMap[file.Path()] = goPackage
 			}
-			// if len(f.Messages) > 0 {
-			// 	// err = protogenic.GenerateTypescript(gen, f)
-			// 	// if err != nil {
-			// 	// 	panic(err)
-			// 	// }
-			// 	goPackage := f.GoImportPath.String()
-			// 	goPath := strings.ReplaceAll(goPackage, "\"", "")
-			// 	// goPath = strings.ReplaceAll(goPath, "__$PATH$__", "")
-			// 	// goPath = strings.TrimPrefix(goPath, "/")
-			// 	exec := exec.Command("protoc", "--go_out=.", fmt.Sprintf("--proto_path=%s", wd), name)
-			// 	exec.Stderr = os.Stderr
-			// 	exec.Stdout = os.Stdout
-			// 	err := exec.Run()
-			// 	if err != nil {
-			// 		panic(err)
-			// 	}
-			// 	fileName := strings.Split(strings.ReplaceAll(name, "\\", "/"), "/")
-			// 	finalFileName := fmt.Sprintf("%s.pb.go", strings.ReplaceAll(fileName[len(fileName)-1], ".proto", ""))
-			// 	file, err := os.ReadFile(protogenic.CombinePath(wd, goPath, finalFileName))
-			// 	if err != nil {
-			// 		panic(err)
-			// 	}
-			// 	fileStr := string(file)
-			// 	for _, value := range fileMap {
-			// 		fileStr = strings.ReplaceAll(fileStr, value, fmt.Sprintf("%s/%s", module, value))
-			// 	}
-			// 	path := protogenic.CombinePath(module, strings.ReplaceAll(string(f.GoImportPath), "\"", ""))
-			// 	err = os.MkdirAll(path, os.ModePerm)
-			// 	if err != nil {
-			// 		panic(err)
-			// 	}
-			// 	err = os.RemoveAll(protogenic.CombinePath(wd, strings.Split(goPath, "/")[0]))
-			// 	if err != nil {
-			// 		panic(err)
-			// 	}
-			// 	err = os.WriteFile(protogenic.CombinePath(path, finalFileName), []byte(fileStr), os.ModePerm)
-			// 	if err != nil {
-			// 		panic(err)
-			// 	}
+			// goPackage := f.GoImportPath.String()
+			// goPath := strings.ReplaceAll(goPackage, "\"", "")
+			// goPath = strings.ReplaceAll(goPath, "__$PATH$__", "")
+			// goPath = strings.TrimPrefix(goPath, "/")
+			exec := exec.Command("protoc", fmt.Sprintf("--go_out=%s", module), fmt.Sprintf("--proto_path=%s", wd), name)
+			exec.Stderr = os.Stderr
+			exec.Stdout = os.Stdout
+			err := exec.Run()
+			if err != nil {
+				panic(err)
+			}
+			// fileName := strings.Split(strings.ReplaceAll(name, "\\", "/"), "/")
+			// finalFileName := fmt.Sprintf("%s.pb.go", strings.ReplaceAll(fileName[len(fileName)-1], ".proto", ""))
+			// file, err := os.ReadFile(protogenic.CombinePath(wd, goPath, finalFileName))
+			// if err != nil {
+			// 	panic(err)
+			// }
+			// fileStr := string(file)
+			// for _, value := range fileMap {
+			// 	fileStr = strings.ReplaceAll(fileStr, value, fmt.Sprintf("%s/%s", module, value))
+			// }
+			// path := protogenic.CombinePath(module, strings.ReplaceAll(string(f.GoImportPath), "\"", ""))
+			// err = os.MkdirAll(path, os.ModePerm)
+			// if err != nil {
+			// 	panic(err)
+			// }
+			// err = os.RemoveAll(protogenic.CombinePath(wd, strings.Split(goPath, "/")[0]))
+			// if err != nil {
+			// 	panic(err)
+			// }
+			// err = os.WriteFile(protogenic.CombinePath(path, finalFileName), []byte(fileStr), os.ModePerm)
+			// if err != nil {
+			// 	panic(err)
+			// }
 			// }
 		}
 		return nil
