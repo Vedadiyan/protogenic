@@ -2,6 +2,7 @@ package protogenic
 
 import (
 	"bytes"
+	"reflect"
 	"strings"
 	"text/template"
 )
@@ -30,6 +31,10 @@ func init() {
 				str.WriteString(" ")
 			}
 			return str.String()
+		},
+		"IsLastIndex": func(index int, list any) bool {
+			listValue := reflect.ValueOf(list)
+			return index > listValue.Len()-1
 		},
 	}
 }

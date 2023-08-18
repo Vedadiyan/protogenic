@@ -1,4 +1,5 @@
-{{ range $i := . }} export enum {{ $i.Name }} { {{ range $x := $i.Fields }}
-    {{ $x.Value | ToUpperCase }}{{ if $x.IsLast }},{{ end }}{{ end }}
+export enum {{ .Name }} { 
+    {{- range $i, $x := .Fields }}
+    {{ $x.Name | ToUpperCase }} {{- if (IsLastIndex $i $.Fields)}},{{- end }}
+    {{- end }}
 }
-{{ end }}
