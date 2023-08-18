@@ -28,6 +28,7 @@ func RunProtoc() {
 		params := strings.Split(gen.Request.GetParameter(), ",")
 		var module string
 		var wd string
+		features := make(map[string]bool)
 		for _, param := range params {
 			parts := strings.Split(param, "=")
 			if len(parts) != 2 {
@@ -40,6 +41,11 @@ func RunProtoc() {
 			if parts[0] == "wd" {
 				wd = parts[1]
 			}
+			if parts[0] == "features" {
+				for _, i := range strings.Split(parts[0], "|") {
+					features[i] = true
+				}
+			}
 		}
 		for name, f := range gen.FilesByPath {
 			_ = wd
@@ -47,21 +53,29 @@ func RunProtoc() {
 			if !f.Generate {
 				continue
 			}
-			err := protogenic.GenerateNats(module, gen, f)
-			if err != nil {
-				panic(err)
+			if _, ok := features["service"]; ok {
+				err := protogenic.GenerateNats(module, gen, f)
+				if err != nil {
+					panic(err)
+				}
 			}
-			err = protogenic.GenerateAPIGateway(gen, f)
-			if err != nil {
-				panic(err)
+			if _, ok := features["api_gateway"]; ok {
+				err := protogenic.GenerateAPIGateway(gen, f)
+				if err != nil {
+					panic(err)
+				}
 			}
-			err = protogenic.GenerateServer(module, gen, f)
-			if err != nil {
-				panic(err)
+			if _, ok := features["server"]; ok {
+				err := protogenic.GenerateServer(module, gen, f)
+				if err != nil {
+					panic(err)
+				}
 			}
-			err = protogenic.GenerateTypescript(gen, f)
-			if err != nil {
-				panic(err)
+			if _, ok := features["client"]; ok {
+				err := protogenic.GenerateTypescript(gen, f)
+				if err != nil {
+					panic(err)
+				}
 			}
 			if len(f.Messages) > 0 {
 				// err = protogenic.GenerateTypescript(gen, f)
