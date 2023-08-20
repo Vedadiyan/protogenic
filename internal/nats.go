@@ -169,7 +169,8 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					for _, webHeader := range http.Header {
 						natsService.WebHeaderCollection[strings.ToLower(webHeader.Key)] = webHeader.Value
 					}
-					filename := moduleName + "/" + file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s.pb.go", service.GoName, method.GoName)
+					path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
+					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "service.pb.go"
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := serviceTemplate.Execute(&serverCode, natsService)
@@ -273,7 +274,8 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),
 					}
-					filename := moduleName + "/" + file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s.pb.go", service.GoName, method.GoName)
+					path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
+					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "service.pb.go"
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := postgresqlTemplate.Execute(&serverCode, postgresService)
@@ -314,7 +316,8 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						File:              file.GoImportPath.String(),
 					}
 
-					filename := moduleName + "/" + file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_%s.pb.go", service.GoName, method.GoName)
+					path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
+					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "service.pb.go"
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := genqlTemplate.Execute(&serverCode, genqlService)

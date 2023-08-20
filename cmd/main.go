@@ -87,6 +87,9 @@ func RunProtoc() {
 			fileMap := make(map[string]string)
 			for i := 0; i < f.Desc.Imports().Len(); i++ {
 				file := f.Desc.Imports().Get(i)
+				if file.Package().Name() == "protobuf" {
+					continue
+				}
 				options := file.Options().(*descriptorpb.FileOptions)
 				goPackage := options.GetGoPackage()
 				exec := exec.Command(protogenic.CombinePath(wd, "protogenic.exe"), "-f", file.Path(), "-m", module)
@@ -109,16 +112,17 @@ func RunProtoc() {
 			if err != nil {
 				panic(err)
 			}
-			// fileName := strings.Split(strings.ReplaceAll(name, "\\", "/"), "/")
-			// finalFileName := fmt.Sprintf("%s.pb.go", strings.ReplaceAll(fileName[len(fileName)-1], ".proto", ""))
-			// file, err := os.ReadFile(protogenic.CombinePath(wd, goPath, finalFileName))
-			// if err != nil {
-			// 	panic(err)
-			// }
-			// fileStr := string(file)
-			// for _, value := range fileMap {
-			// 	fileStr = strings.ReplaceAll(fileStr, value, fmt.Sprintf("%s/%s", module, value))
-			// }
+			fileName := strings.Split(strings.ReplaceAll(name, "\\", "/"), "/")
+			finalFileName := protogenic.CombinePath(wd, module, strings.ReplaceAll(f.GoImportPath.String(), "\"", ""), fmt.Sprintf("%s.pb.go", strings.ReplaceAll(fileName[len(fileName)-1], ".proto", "")))
+			_ = finalFileName
+			file, err := os.ReadFile(finalFileName)
+			if err != nil {
+				panic(err)
+			}
+			fileStr := string(file)
+			for _, value := range fileMap {
+				fileStr = strings.ReplaceAll(fileStr, value, fmt.Sprintf("%s/%s", module, value))
+			}
 			// path := protogenic.CombinePath(module, strings.ReplaceAll(string(f.GoImportPath), "\"", ""))
 			// err = os.MkdirAll(path, os.ModePerm)
 			// if err != nil {
@@ -128,10 +132,10 @@ func RunProtoc() {
 			// if err != nil {
 			// 	panic(err)
 			// }
-			// err = os.WriteFile(protogenic.CombinePath(path, finalFileName), []byte(fileStr), os.ModePerm)
-			// if err != nil {
-			// 	panic(err)
-			// }
+			err = os.WriteFile(finalFileName, []byte(fileStr), os.ModePerm)
+			if err != nil {
+				panic(err)
+			}
 			// }
 		}
 		return nil
