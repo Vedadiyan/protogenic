@@ -59,7 +59,7 @@ type AggregatedAPIGatewayContext struct {
 	UseValidation     bool
 }
 
-func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
+func GenerateAPIGateway(moduleName string, plugin *protogen.Plugin, file *protogen.File) error {
 	for _, service := range file.Services {
 		serviceOptions := service.Desc.Options().(*descriptorpb.ServiceOptions)
 		nats := proto.GetExtension(serviceOptions, rpc.E_Nats).(*rpc.NATS)
@@ -172,7 +172,8 @@ func GenerateAPIGateway(plugin *protogen.Plugin, file *protogen.File) error {
 			UseMeta:           IfNill(apiGateway.UseMeta, false),
 			UseValidation:     IfNill(apiGateway.UseValidation, false),
 		}
-		filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_gateway.pb.go", service.GoName)
+		path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
+		filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "gateway.pb.go"
 		svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 		var serverCode bytes.Buffer
 		err = apiGatewayTemplate.Execute(&serverCode, gateway)

@@ -61,7 +61,7 @@ func RunProtoc() {
 					}
 				}
 				if _, ok := features["api_gateway"]; ok {
-					err := protogenic.GenerateAPIGateway(gen, f)
+					err := protogenic.GenerateAPIGateway(module, gen, f)
 					if err != nil {
 						panic(err)
 					}
