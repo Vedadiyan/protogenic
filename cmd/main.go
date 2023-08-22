@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 
 	flaggy "github.com/vedadiyan/flaggy/pkg"
@@ -29,6 +30,7 @@ func RunProtoc() {
 		var module string
 		var wd string
 		features := make(map[string]bool)
+		var featuresRef string
 		for _, param := range params {
 			parts := strings.Split(param, "=")
 			if len(parts) != 2 {
@@ -42,6 +44,7 @@ func RunProtoc() {
 				wd = parts[1]
 			}
 			if parts[0] == "features" {
+				featuresRef = parts[1]
 				for _, i := range strings.Split(parts[1], "|") {
 					features[i] = true
 				}
@@ -92,7 +95,7 @@ func RunProtoc() {
 				}
 				options := file.Options().(*descriptorpb.FileOptions)
 				goPackage := options.GetGoPackage()
-				exec := exec.Command(protogenic.CombinePath(wd, "protogenic.exe"), "-f", file.Path(), "-m", module)
+				exec := exec.Command(protogenic.CombinePath(wd, "protogenic.exe"), "-f", file.Path(), "-m", module, "-t", featuresRef)
 				exec.Stderr = os.Stderr
 				exec.Stdout = os.Stdout
 				err := exec.Run()
@@ -121,7 +124,13 @@ func RunProtoc() {
 			}
 			fileStr := string(file)
 			for _, value := range fileMap {
-				fileStr = strings.ReplaceAll(fileStr, value, fmt.Sprintf("%s/%s", module, value))
+				if strings.TrimLeft(value, "/") == strings.ReplaceAll(f.GoImportPath.String(), "\"", "") {
+					pattern := regexp.MustCompile(fmt.Sprintf(`(?m)^.*%s.*$\n`, strings.TrimLeft(value, "/")))
+					fileStr = pattern.ReplaceAllString(fileStr, "")
+					continue
+				}
+				importPath := fmt.Sprintf("%s/%s", strings.TrimRight(module, "/"), strings.TrimLeft(value, "/"))
+				fileStr = strings.ReplaceAll(fileStr, value, importPath)
 			}
 			// path := protogenic.CombinePath(module, strings.ReplaceAll(string(f.GoImportPath), "\"", ""))
 			// err = os.MkdirAll(path, os.ModePerm)
