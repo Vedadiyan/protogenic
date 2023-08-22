@@ -126,7 +126,11 @@ func RunProtoc() {
 			for _, value := range fileMap {
 				if strings.TrimLeft(value, "/") == strings.ReplaceAll(f.GoImportPath.String(), "\"", "") {
 					pattern := regexp.MustCompile(fmt.Sprintf(`(?m)^.*%s.*$\n`, strings.TrimLeft(value, "/")))
+					line := pattern.FindAllString(fileStr, 1)[0]
+					line = strings.Split(strings.TrimLeft(line, "\t"), " ")[0]
+					line = strings.TrimRight(line, " ")
 					fileStr = pattern.ReplaceAllString(fileStr, "")
+					fileStr = strings.ReplaceAll(fileStr, fmt.Sprintf("%s.", line), "")
 					continue
 				}
 				importPath := fmt.Sprintf("%s/%s", strings.TrimRight(module, "/"), strings.TrimLeft(value, "/"))

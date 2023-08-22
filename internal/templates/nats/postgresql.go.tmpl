@@ -62,12 +62,6 @@ func init() {
 			_NS_{{ .MethodName | ToUpperCase }},
 			_QUEUE_{{ .MethodName | ToUpperCase }},
 			handler{{ .MethodName | ToPascalCase}},
-			func() *Request{{ .MethodName | ToPascalCase }} {
-				return &Request{{ .MethodName | ToPascalCase }}{}
-			},
-			func() *Response{{ .MethodName | ToPascalCase }} {
-				return &Response{{ .MethodName | ToPascalCase }}{}
-			},
 			service.WithCache(time.Millisecond * {{ .CacheInterval }}),
 			{{- if .Callback.OnSuccess }}
 			service.WithOnSuccessCallBacks(
@@ -77,7 +71,7 @@ func init() {
 			),
 			{{- end }}
 			{{- if .Callback.OnError }}
-			service.WithOnErrorCallBacks(
+			service.WithOnFailureCallBacks(
 				{{- range $item :=  .Callback.OnError }}
 					"{{$item}}",
 				{{- end }}
