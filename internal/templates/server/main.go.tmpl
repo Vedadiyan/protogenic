@@ -26,6 +26,11 @@ func init() {
 }
 
 func main() {
-	auto.Bootstrap("{{ .ETCD }}")
+	etcd := os.getEnv("ETCD_URL")
+	if len(etcd) == 0 { 
+		auto.Bootstrap(auto.ForConfigMap())
+	} else {
+		auto.Bootstrap(auto.ForETCD(etcd))
+	}
 	service.Bootstrap()
 }
