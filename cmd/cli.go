@@ -40,6 +40,9 @@ func (o Options) Run() {
 	if t == "service" {
 		t = "service|server"
 	}
+	if t == "api_gateway" {
+		t = "api_gateway|api_gateway_server"
+	}
 	exec := exec.Command("protoc", "--plugin=protoc-gen-protogenic=./protogenic.exe", strings.Join(o.Files, " "), "--protogenic_out=./", fmt.Sprintf("--protogenic_opt=wd=%s,Module=%s,features=%s", wd, o.Module, t))
 	exec.Stdout = os.Stdout
 	exec.Stderr = os.Stderr

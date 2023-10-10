@@ -1,10 +1,13 @@
 package main
 
 import (
+	 _ "{{ .Import }}"
+
+	"os"
+
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	auto "github.com/vedadiyan/goal/pkg/config/auto"
 	"github.com/vedadiyan/goal/pkg/service"
-	 _ "{{ .Import }}"
 )
 
 func init() {
@@ -26,7 +29,7 @@ func init() {
 }
 
 func main() {
-	etcd := os.getEnv("ETCD_URL")
+	etcd := os.GetEnv("ETCD_URL")
 	if len(etcd) == 0 { 
 		auto.Bootstrap(auto.ForConfigMap())
 	} else {

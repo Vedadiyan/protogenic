@@ -1,0 +1,30 @@
+package main
+
+import (
+	 _ "{{ .Import }}"
+
+    "os"
+
+    "github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	helpers "github.com/vedadiyan/goal-helpers/pkg"
+	auto "github.com/vedadiyan/goal/pkg/config/auto"
+)
+
+func init() {
+	{{- range $i, $key := .NatsConns}}
+	helpers.AddNats("{{ $key }}")
+	{{- end }}
+}
+
+func main() {
+	etcd := os.GetEnv("ETCD_URL")
+	if len(etcd) == 0 { 
+		auto.Bootstrap(auto.ForConfigMap())
+	} else {
+		auto.Bootstrap(auto.ForETCD(etcd))
+	}
+	fiber := fiber.New()
+	fiber.Use(cors.New())
+	fiber.Listen(":8080")
+}
