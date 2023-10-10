@@ -18,7 +18,7 @@ func init() {
 }
 
 func main() {
-	etcd := os.GetEnv("ETCD_URL")
+	etcd := os.Getenv("ETCD_URL")
 	if len(etcd) == 0 { 
 		auto.Bootstrap(auto.ForConfigMap())
 	} else {
