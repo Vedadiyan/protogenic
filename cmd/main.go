@@ -101,7 +101,7 @@ func RunProtoc() {
 				}
 				options := file.Options().(*descriptorpb.FileOptions)
 				goPackage := options.GetGoPackage()
-				exec := exec.Command(protogenic.CombinePath(wd, "protogenic.exe"), "-f", file.Path(), "-m", module, "-t", featuresRef)
+				exec := exec.Command(protogenic.CombinePath("/", wd, "protogenic"), "-f", file.Path(), "-m", module, "-t", featuresRef)
 				exec.Stderr = os.Stderr
 				exec.Stdout = os.Stdout
 				err := exec.Run()
@@ -122,7 +122,7 @@ func RunProtoc() {
 				panic(err)
 			}
 			fileName := strings.Split(strings.ReplaceAll(name, "\\", "/"), "/")
-			finalFileName := protogenic.CombinePath(wd, module, strings.ReplaceAll(f.GoImportPath.String(), "\"", ""), fmt.Sprintf("%s.pb.go", strings.ReplaceAll(fileName[len(fileName)-1], ".proto", "")))
+			finalFileName := protogenic.CombinePath("/", wd, module, strings.ReplaceAll(f.GoImportPath.String(), "\"", ""), fmt.Sprintf("%s.pb.go", strings.ReplaceAll(fileName[len(fileName)-1], ".proto", "")))
 			_ = finalFileName
 			file, err := os.ReadFile(finalFileName)
 			if err != nil {
