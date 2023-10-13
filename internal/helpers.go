@@ -43,6 +43,9 @@ func IfNill[T any](value *T, fallback T) T {
 func CombinePath(path ...string) string {
 	buffer := bytes.NewBufferString("")
 	for i := 0; i < len(path); i++ {
+		if len(path[i]) == 0 {
+			continue
+		}
 		buffer.WriteString(strings.ReplaceAll(strings.TrimSuffix(strings.TrimPrefix(path[i], "/"), "/"), "\\", "/"))
 		if i < len(path)-1 {
 			buffer.WriteString("/")

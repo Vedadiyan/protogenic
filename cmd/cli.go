@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 
 	flaggy "github.com/vedadiyan/flaggy/pkg"
 )
+
+var protogenicFileName string
+var path string
 
 type Options struct {
 	Type        string   `long:"--type" short:"-t" help:"Generation type (service, api_gateway, client)"`
@@ -15,6 +19,22 @@ type Options struct {
 	Module      string   `long:"--module" short:"-m" help:"The name of the Go module"`
 	IncludePath *string  `long:"--include-path" short:"-I" help:"Protoc include path"`
 	Help        bool     `long:"--help" short:"-h" help:"Shows help"`
+}
+
+func init() {
+	os := runtime.GOOS
+	switch os {
+	case "windows":
+		{
+			protogenicFileName = "protogenic.exe"
+			path = ""
+		}
+	default:
+		{
+			protogenicFileName = "protogenic"
+			path = "/"
+		}
+	}
 }
 
 func (o Options) Run() {
@@ -43,7 +63,7 @@ func (o Options) Run() {
 	if t == "api_gateway" {
 		t = "api_gateway|api_gateway_server"
 	}
-	exec := exec.Command("protoc", "--plugin=protoc-gen-protogenic=./protogenic", strings.Join(o.Files, " "), "--protogenic_out=./", fmt.Sprintf("--protogenic_opt=wd=%s,Module=%s,features=%s", wd, o.Module, t))
+	exec := exec.Command("protoc", fmt.Sprintf("--plugin=protoc-gen-protogenic=./%s", protogenicFileName), strings.Join(o.Files, " "), "--protogenic_out=./", fmt.Sprintf("--protogenic_opt=wd=%s,Module=%s,features=%s", wd, o.Module, t))
 	exec.Stdout = os.Stdout
 	exec.Stderr = os.Stderr
 	err := exec.Run()
