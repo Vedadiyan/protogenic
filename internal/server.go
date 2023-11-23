@@ -27,10 +27,12 @@ type Server struct {
 	PostgresConns []string
 	RedisConns    []string
 	MongoConns    []string
-	UseInfluxDb   bool
 	InfluxDb      string
 	ModuleName    string
-	ETCD          string
+	UseEtcd       string
+	UseMongoDb    string
+	UseRedis      string
+	UseInfluxDb   string
 	Import        string
 }
 
@@ -43,7 +45,10 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 		return err
 	}
 	fileOptions := file.Desc.Options().(*descriptorpb.FileOptions)
-	etcd := proto.GetExtension(fileOptions, rpc.E_Etcd).(*rpc.ETCD)
+	useEtcd := proto.GetExtension(fileOptions, rpc.E_UseEtcd).(*string)
+	useMongodb := proto.GetExtension(fileOptions, rpc.E_UseMongoDb).(*string)
+	useRedis := proto.GetExtension(fileOptions, rpc.E_UseRedis).(*string)
+	useInfluxDb := proto.GetExtension(fileOptions, rpc.E_UseInfluxDb).(*string)
 	natsConns := make([]string, 0)
 	for _, service := range file.Services {
 		serviceOptions := service.Desc.Options().(*descriptorpb.ServiceOptions)
@@ -74,8 +79,10 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 		PostgresConns: postgresConns,
 		RedisConns:    redisConns,
 		MongoConns:    mongoConns,
-		UseInfluxDb:   false,
-		ETCD:          etcd.Url,
+		UseEtcd:       EmptyIfNill(useEtcd),
+		UseMongoDb:    EmptyIfNill(useMongodb),
+		UseRedis:      EmptyIfNill(useRedis),
+		UseInfluxDb:   EmptyIfNill(useInfluxDb),
 		Import:        fmt.Sprintf("%s/%s", moduleName, strings.ReplaceAll(string(file.GoImportPath), "\"", "")),
 	}
 	path := CombinePath(moduleName, "cmd")
