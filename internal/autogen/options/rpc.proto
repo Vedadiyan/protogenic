@@ -74,9 +74,7 @@ message Definition {
         PostgreSQL postgresql = 3;
     }
 }
-message ETCD {
-    string url = 1;
-}
+
 extend google.protobuf.ServiceOptions {
   optional NATS nats = 50000;
   optional APIGateway api_gateway = 50002;
@@ -88,5 +86,8 @@ extend google.protobuf.MethodOptions {
 }
 
 extend google.protobuf.FileOptions {
-    ETCD etcd = 9000;
+    string useEtcd = 9000;
+    repeated string useMongoDb = 9001;
+    repeated string useRedis = 9002;
+    string useInfluxDb = 9003;
 }
