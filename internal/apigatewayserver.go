@@ -22,13 +22,9 @@ var (
 )
 
 type APIGatewayServer struct {
-	NatsConns   []string
-	ModuleName  string
-	UseEtcd     string
-	UseMongoDb  string
-	UseRedis    string
-	UseInfluxDb string
-	Import      string
+	NatsConns  []string
+	ModuleName string
+	Import     string
 }
 
 func GenerateAPIGatewayServer(moduleName string, plugin *protogen.Plugin, file *protogen.File) error {
@@ -39,11 +35,6 @@ func GenerateAPIGatewayServer(moduleName string, plugin *protogen.Plugin, file *
 	if err != nil {
 		return err
 	}
-	fileOptions := file.Desc.Options().(*descriptorpb.FileOptions)
-	useEtcd := proto.GetExtension(fileOptions, rpc.E_UseEtcd).(*string)
-	useMongodb := proto.GetExtension(fileOptions, rpc.E_UseMongoDb).(*string)
-	useRedis := proto.GetExtension(fileOptions, rpc.E_UseRedis).(*string)
-	useInfluxDb := proto.GetExtension(fileOptions, rpc.E_UseInfluxDb).(*string)
 	natsConns := make([]string, 0)
 	for _, service := range file.Services {
 		serviceOptions := service.Desc.Options().(*descriptorpb.ServiceOptions)
@@ -51,12 +42,8 @@ func GenerateAPIGatewayServer(moduleName string, plugin *protogen.Plugin, file *
 		natsConns = append(natsConns, nats.Connection)
 	}
 	server := APIGatewayServer{
-		NatsConns:   natsConns,
-		UseEtcd:     EmptyIfNill(useEtcd),
-		UseMongoDb:  EmptyIfNill(useMongodb),
-		UseRedis:    EmptyIfNill(useRedis),
-		UseInfluxDb: EmptyIfNill(useInfluxDb),
-		Import:      fmt.Sprintf("%s/%s", moduleName, strings.ReplaceAll(string(file.GoImportPath), "\"", "")),
+		NatsConns: natsConns,
+		Import:    fmt.Sprintf("%s/%s", moduleName, strings.ReplaceAll(string(file.GoImportPath), "\"", "")),
 	}
 	path := CombinePath(moduleName, "cmd")
 	err = os.MkdirAll(path, os.ModePerm)
