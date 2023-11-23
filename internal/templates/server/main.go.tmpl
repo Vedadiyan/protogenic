@@ -17,11 +17,11 @@ func init() {
 	{{- range $i, $key := .PostgresConns}}
 	helpers.AddPostgres("{{ $key }}")
 	{{- end }}
-	{{- if .UseRedis}}
-	helpers.AddRedis("{{ .UseRedis }}")
+	{{- range $i, $key := .UseRedis}}
+	helpers.AddRedis("{{ $key }}")
 	{{- end }}	
-	{{- if .UseMongoDb }}
-	helpers.AddMongo("{{ .UseMongoDb }}")
+	{{- range $i, $key := .UseMongoDb}}
+	helpers.AddMongo("{{ $key }}")
 	{{- end }}	
 	{{- if .UseInfluxDb }}
 	helpers.AddInfluxDb("{{ .UseInfluxDb }}", "{{ .ModuleName }}")

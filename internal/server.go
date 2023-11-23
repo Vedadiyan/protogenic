@@ -30,8 +30,8 @@ type Server struct {
 	InfluxDb      string
 	ModuleName    string
 	UseEtcd       string
-	UseMongoDb    string
-	UseRedis      string
+	UseMongoDb    []string
+	UseRedis      []string
 	UseInfluxDb   string
 	Import        string
 }
@@ -46,8 +46,8 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 	}
 	fileOptions := file.Desc.Options().(*descriptorpb.FileOptions)
 	useEtcd := proto.GetExtension(fileOptions, rpc.E_UseEtcd).(string)
-	useMongodb := proto.GetExtension(fileOptions, rpc.E_UseMongoDb).(string)
-	useRedis := proto.GetExtension(fileOptions, rpc.E_UseRedis).(string)
+	useMongodb := proto.GetExtension(fileOptions, rpc.E_UseMongoDb).([]string)
+	useRedis := proto.GetExtension(fileOptions, rpc.E_UseRedis).([]string)
 	useInfluxDb := proto.GetExtension(fileOptions, rpc.E_UseInfluxDb).(string)
 	natsConns := make([]string, 0)
 	for _, service := range file.Services {
