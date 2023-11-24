@@ -5,6 +5,7 @@ import (
 
     "os"
 
+	"github.com/vedadiyan/goal/pkg/gateways"
     "github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
@@ -25,6 +26,7 @@ func main() {
 		auto.Bootstrap(auto.ForETCD(etcd))
 	}
 	fiber := fiber.New()
+	gateways.Bootstrap(fiber)
 	fiber.Use(cors.New())
 	fiber.Listen(":8080")
 }
