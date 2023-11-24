@@ -125,7 +125,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					if http.RequestMapper.GetSql() != "" {
 						requestMapper = StringToGoByteArray(http.RequestMapper.GetSql())
 					} else if http.RequestMapper.GetFile() != "" {
-						file, err := os.ReadFile(CombinePath(path, http.RequestMapper.GetFile()))
+						file, err := os.ReadFile(CombinePath("/", path, http.RequestMapper.GetFile()))
 						if err != nil {
 							return err
 						}
@@ -135,7 +135,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					if http.ResponseMapper.GetSql() != "" {
 						responseMapper = StringToGoByteArray(http.ResponseMapper.GetSql())
 					} else if http.ResponseMapper.GetFile() != "" {
-						file, err := os.ReadFile(CombinePath(path, http.ResponseMapper.GetFile()))
+						file, err := os.ReadFile(CombinePath("/", path, http.ResponseMapper.GetFile()))
 						if err != nil {
 							return err
 						}
@@ -186,7 +186,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					if postgresql.RequestMapper.GetSql() != "" {
 						requestMapper = StringToGoByteArray(postgresql.RequestMapper.GetSql())
 					} else if postgresql.RequestMapper.GetFile() != "" {
-						file, err := os.ReadFile(CombinePath(path, postgresql.RequestMapper.GetFile()))
+						file, err := os.ReadFile(CombinePath("/", path, postgresql.RequestMapper.GetFile()))
 						if err != nil {
 							return err
 						}
@@ -196,7 +196,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					if postgresql.ResponseMapper.GetSql() != "" {
 						responseMapper = StringToGoByteArray(postgresql.ResponseMapper.GetSql())
 					} else if postgresql.ResponseMapper.GetFile() != "" {
-						file, err := os.ReadFile(CombinePath(path, postgresql.ResponseMapper.GetFile()))
+						file, err := os.ReadFile(CombinePath("/", path, postgresql.ResponseMapper.GetFile()))
 						if err != nil {
 							return err
 						}
@@ -211,7 +211,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 							switch postgresql.GetCommand().Mapper.(type) {
 							case *rpc.Mapper_File:
 								{
-									file, err := os.ReadFile(CombinePath(path, postgresql.GetCommand().GetFile()))
+									file, err := os.ReadFile(CombinePath("/", path, postgresql.GetCommand().GetFile()))
 									if err != nil {
 										return err
 									}
@@ -229,7 +229,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 							switch postgresql.GetQuery().Mapper.(type) {
 							case *rpc.Mapper_File:
 								{
-									file, err := os.ReadFile(CombinePath(path, postgresql.GetQuery().GetFile()))
+									file, err := os.ReadFile(CombinePath("/", path, postgresql.GetQuery().GetFile()))
 									if err != nil {
 										return err
 									}
@@ -291,7 +291,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					if http.Query.GetSql() != "" {
 						query = StringToGoByteArray(http.Query.GetSql())
 					} else if http.Query.GetFile() != "" {
-						file, err := os.ReadFile(CombinePath(path, http.Query.GetFile()))
+						file, err := os.ReadFile(CombinePath("/", path, http.Query.GetFile()))
 						if err != nil {
 							return err
 						}
