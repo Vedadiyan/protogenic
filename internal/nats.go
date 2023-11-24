@@ -157,7 +157,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseMapper:           responseMapper,
 						WebHeaderCollection:      make(map[string]string),
 						MethodName:               method.GoName,
-						CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
+						//CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
 						// Callback: Callback{
 						// 	OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
 						// 	OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
