@@ -10,13 +10,7 @@ import (
 	_ "github.com/vedadiyan/gql/pkg/functions/count"
 	_ "github.com/vedadiyan/gql/pkg/functions/first"
 	_ "github.com/vedadiyan/gql/pkg/functions/min"
-	{{- if .UseMongoDb}}
-	mng "github.com/vedadiyan/gql/pkg/functions/mongo"
-	{{- end }}
 	_ "github.com/vedadiyan/gql/pkg/functions/nullifempty"
-	{{- if .UseRedis}}
-	rds "github.com/vedadiyan/gql/pkg/functions/redis"
-	{{- end }}
 	_ "github.com/vedadiyan/gql/pkg/functions/selectkey"
 	_ "github.com/vedadiyan/gql/pkg/functions/toarray"
 	_ "github.com/vedadiyan/gql/pkg/functions/tobytes"
@@ -40,19 +34,10 @@ func init() {
 	helpers.AddPostgres("{{ $key }}")
 	{{- end }}
 	{{- range $i, $key := .UseRedis}}
-	redisConn := redis.NewClient(&redis.Options{
-		Addr: "{{ $key }}",
-		DB:   0,
-	})
-	rds.RegisterConManager(func(connKey string) (*redis.Client, error) {
-		return redisConn, nil
-	})
+	helpers.AddRedis("{{ $key }}")
 	{{- end }}	
 	{{- range $i, $key := .UseMongoDb}}
-	mongoConnection, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("{{ $key }}"))
-	mng.RegisterConManager(func(connKey string) (*mongo.Client, error) {
-		return mongoConnection, err
-	})
+	helpers.AddMongo("{{ $key }}")
 	{{- end }}	
 	{{- if .UseInfluxDb }}
 	helpers.AddInfluxDb("{{ .UseInfluxDb }}", "{{ .ModuleName }}")
