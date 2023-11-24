@@ -159,8 +159,8 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						MethodName:               method.GoName,
 						CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
 						Callback: Callback{
-							OnSuccess: rpcOptions.Events.OnSuccess,
-							OnError:   rpcOptions.Events.OnFailure,
+							OnSuccess: IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnSuccess,
+							OnError:   IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnFailure,
 						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
@@ -267,8 +267,8 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						CacheInterval:  IfNill(rpcOptions.Configure.CacheInterval, -1),
 						MethodName:     method.GoName,
 						Callback: Callback{
-							OnSuccess: rpcOptions.Events.OnSuccess,
-							OnError:   rpcOptions.Events.OnFailure,
+							OnSuccess: IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnSuccess,
+							OnError:   IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnFailure,
 						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
@@ -307,10 +307,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseType: method.Output.GoIdent.GoName,
 						Query:        query,
 						MethodName:   method.GoName,
-						// Callback: Callback{
-						// 	OnSuccess: rpcOptions.Events.OnSuccess,
-						// 	OnError:   rpcOptions.Events.OnFailure,
-						// },
+						Callback: Callback{
+							OnSuccess: IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnSuccess,
+							OnError:   IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnFailure,
+						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),
