@@ -157,11 +157,11 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseMapper:           responseMapper,
 						WebHeaderCollection:      make(map[string]string),
 						MethodName:               method.GoName,
-						//CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
-						// Callback: Callback{
-						// 	OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
-						// 	OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
-						// },
+						CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
+						Callback: Callback{
+							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
+							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
+						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),
@@ -170,7 +170,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						natsService.WebHeaderCollection[strings.ToLower(webHeader.Key)] = webHeader.Value
 					}
 					path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
-					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "service.pb.go"
+					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "service.http.pb.go"
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := serviceTemplate.Execute(&serverCode, natsService)
@@ -266,16 +266,16 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseMapper: responseMapper,
 						CacheInterval:  IfNill(rpcOptions.Configure.CacheInterval, -1),
 						MethodName:     method.GoName,
-						// Callback: Callback{
-						// 	OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
-						// 	OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
-						// },
+						Callback: Callback{
+							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
+							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
+						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),
 					}
 					path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
-					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "service.pb.go"
+					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "service.postgres.pb.go"
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := postgresqlTemplate.Execute(&serverCode, postgresService)
@@ -307,17 +307,17 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseType: method.Output.GoIdent.GoName,
 						Query:        query,
 						MethodName:   method.GoName,
-						// Callback: Callback{
-						// 	OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
-						// 	OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
-						// },
+						Callback: Callback{
+							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
+							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
+						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),
 					}
 
 					path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
-					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "service.pb.go"
+					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "service.genql.pb.go"
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := genqlTemplate.Execute(&serverCode, genqlService)
