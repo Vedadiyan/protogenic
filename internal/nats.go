@@ -158,10 +158,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						WebHeaderCollection:      make(map[string]string),
 						MethodName:               method.GoName,
 						CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
-						Callback: Callback{
-							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
-							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
-						},
+						// Callback: Callback{
+						// 	OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
+						// 	OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
+						// },
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),
@@ -266,10 +266,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseMapper: responseMapper,
 						CacheInterval:  IfNill(rpcOptions.Configure.CacheInterval, -1),
 						MethodName:     method.GoName,
-						Callback: Callback{
-							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
-							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
-						},
+						// Callback: Callback{
+						// 	OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
+						// 	OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
+						// },
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),
@@ -307,10 +307,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseType: method.Output.GoIdent.GoName,
 						Query:        query,
 						MethodName:   method.GoName,
-						Callback: Callback{
-							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
-							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
-						},
+						// Callback: Callback{
+						// 	OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
+						// 	OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
+						// },
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),
