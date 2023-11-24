@@ -14,6 +14,6 @@ import (
 
 func init() {
 	{{- range $key, $value := .Gateways}}
-	gateways.Forward[{{ $value.RequestType }}, {{ $value.ResponseType }}]("{{ $.Route }}{{- if $key ne Ommit }}/{{ $key }}{{- end}}", "{{ $.Method }}", "{{ $value.Namespace }}" {{ if $.UseMeta }}, gateways.UseMeta() {{ end }} {{ if $.UseValidation }}, gateways.UseValidation {{ end }} )
+	gateways.Forward[{{ $value.RequestType }}, {{ $value.ResponseType }}]("{{ $.Route }}{{- if $key ne "Ommit" }}/{{ $key }}{{- end}}", "{{ $.Method }}", "{{ $value.Namespace }}" {{ if $.UseMeta }}, gateways.UseMeta() {{ end }} {{ if $.UseValidation }}, gateways.UseValidation {{ end }} )
 	{{- end }}
 }
