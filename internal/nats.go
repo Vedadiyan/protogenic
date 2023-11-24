@@ -307,10 +307,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseType: method.Output.GoIdent.GoName,
 						Query:        query,
 						MethodName:   method.GoName,
-						Callback: Callback{
-							OnSuccess: rpcOptions.Events.OnSuccess,
-							OnError:   rpcOptions.Events.OnFailure,
-						},
+						// Callback: Callback{
+						// 	OnSuccess: rpcOptions.Events.OnSuccess,
+						// 	OnError:   rpcOptions.Events.OnFailure,
+						// },
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
 						File:              file.GoImportPath.String(),
