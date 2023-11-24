@@ -5,6 +5,25 @@ import (
 
 	"os"
 
+	_ "github.com/vedadiyan/gql/pkg/functions/avg"
+	_ "github.com/vedadiyan/gql/pkg/functions/concat"
+	_ "github.com/vedadiyan/gql/pkg/functions/count"
+	_ "github.com/vedadiyan/gql/pkg/functions/first"
+	_ "github.com/vedadiyan/gql/pkg/functions/min"
+	mng "github.com/vedadiyan/gql/pkg/functions/mongo"
+	_ "github.com/vedadiyan/gql/pkg/functions/nullifempty"
+	rds "github.com/vedadiyan/gql/pkg/functions/redis"
+	_ "github.com/vedadiyan/gql/pkg/functions/selectkey"
+	_ "github.com/vedadiyan/gql/pkg/functions/toarray"
+	_ "github.com/vedadiyan/gql/pkg/functions/tobytes"
+	_ "github.com/vedadiyan/gql/pkg/functions/todouble"
+	_ "github.com/vedadiyan/gql/pkg/functions/toint"
+	_ "github.com/vedadiyan/gql/pkg/functions/tostring"
+	_ "github.com/vedadiyan/gql/pkg/functions/unwind"
+	_ "github.com/vedadiyan/gql/pkg/functions/uuid"
+	_ "github.com/vedadiyan/gql/pkg/functions/valueof
+
+
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	auto "github.com/vedadiyan/goal/pkg/config/auto"
 	"github.com/vedadiyan/goal/pkg/service"
@@ -18,10 +37,19 @@ func init() {
 	helpers.AddPostgres("{{ $key }}")
 	{{- end }}
 	{{- range $i, $key := .UseRedis}}
-	helpers.AddRedis("{{ $key }}")
+	redisConn := redis.NewClient(&redis.Options{
+		Addr: "{{ $key }}",
+		DB:   0,
+	})
+	rds.RegisterConManager(func(connKey string) (*redis.Client, error) {
+		return redisConn, nil
+	})
 	{{- end }}	
 	{{- range $i, $key := .UseMongoDb}}
-	helpers.AddMongo("{{ $key }}")
+	mongoConnection, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("{{ $key }}"))
+	mng.RegisterConManager(func(connKey string) (*mongo.Client, error) {
+		return mongoConnection, err
+	})
 	{{- end }}	
 	{{- if .UseInfluxDb }}
 	helpers.AddInfluxDb("{{ .UseInfluxDb }}", "{{ .ModuleName }}")
