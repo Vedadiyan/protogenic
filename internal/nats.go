@@ -159,8 +159,8 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						MethodName:               method.GoName,
 						CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
 						Callback: Callback{
-							OnSuccess: IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnSuccess,
-							OnError:   IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnFailure,
+							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
+							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
 						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
@@ -267,8 +267,8 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						CacheInterval:  IfNill(rpcOptions.Configure.CacheInterval, -1),
 						MethodName:     method.GoName,
 						Callback: Callback{
-							OnSuccess: IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnSuccess,
-							OnError:   IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnFailure,
+							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
+							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
 						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
@@ -308,8 +308,8 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						Query:        query,
 						MethodName:   method.GoName,
 						Callback: Callback{
-							OnSuccess: IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnSuccess,
-							OnError:   IfNill(rpcOptions.Events, rpc.RpcOptions_Events{}).OnFailure,
+							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
+							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
 						},
 						ProtogenicVersion: GetVersion(),
 						CompilerVersion:   plugin.Request.CompilerVersion.String(),
