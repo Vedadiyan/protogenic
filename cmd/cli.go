@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 
 	flaggy "github.com/vedadiyan/flaggy/pkg"
+	protogenic "github.com/vedadiyan/protogenic/internal"
 )
 
 var protogenicFileName string
@@ -22,19 +22,7 @@ type Options struct {
 }
 
 func init() {
-	os := runtime.GOOS
-	switch os {
-	case "windows":
-		{
-			protogenicFileName = "protogenic.exe"
-			path = ""
-		}
-	default:
-		{
-			protogenicFileName = "protogenic"
-			path = "/"
-		}
-	}
+	path, protogenicFileName = protogenic.GetPathAndExecutable()
 }
 
 func (o Options) Run() {
