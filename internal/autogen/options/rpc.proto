@@ -14,7 +14,10 @@ message NATS {
 }
 message HTTPHeader {
     string key = 1;
-    string value = 2;
+    oneof value {
+        string static = 2;
+        string variable = 4;
+    }
 }
 message HTTP {
     string method = 1;

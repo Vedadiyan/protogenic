@@ -8,7 +8,12 @@ package {{ .ImportPath }}
 import (
 	"time"
 	"fmt"
-
+	{{- range $key, $value := .WebHeaderCollection }}
+    {{- if eq $value.Type "variable" }}
+	"os"
+	{{ break }}
+	{{- end }}
+	{{- end }}
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/http"
 	"github.com/vedadiyan/goal/pkg/service"
@@ -36,7 +41,7 @@ type (
 )
 
 func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalCase }}) (*Response{{ .MethodName | ToPascalCase }}, error) {
-	{{- if eq (index .WebHeaderCollection "content-type") "application/x-www-form-urlencoded"}} 
+	{{- if and (eq (index .WebHeaderCollection "content-type").Type "static") (eq (index .WebHeaderCollection "content-type").Value "application/x-www-form-urlencoded")}} 
 	req, err := helpers.ToURLEncodedReq(m, _reqMapper{{ .MethodName | ToPascalCase }})
 	{{- else }}
 	req, err := helpers.ToJSONReq(m, _reqMapper{{ .MethodName | ToPascalCase }})
@@ -70,7 +75,11 @@ func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalC
 func getWHC{{ .MethodName | ToPascalCase }}() (http.IWebHeaderCollection, error) {
 	whc := http.NewWebHeaderCollection()
 	{{- range $key, $value := .WebHeaderCollection }}
-    whc.Add("{{ $key }}", "{{ $value }}")
+    {{- if eq $value.Type "static" }}
+	whc.Add("{{ $key }}", "{{ $value.Value }}")
+	{{- else if eq $value.Type "variable" }}
+	whc.Add("{{ $key }}", os.Getenv("{{ $value.Value }}"))
+	{{- end }} 
     {{- end }}
 	if _AUTH_SVC_{{ .MethodName | ToUpperCase }}!= "" {
 		webHeaders, err :=

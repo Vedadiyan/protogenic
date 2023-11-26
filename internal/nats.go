@@ -30,6 +30,11 @@ type Callback struct {
 	OnError   []string
 }
 
+type HttpHeaderValue struct {
+	Type  string
+	Value string
+}
+
 type Nats struct {
 	Callback
 	ImportPath               string
@@ -45,7 +50,7 @@ type Nats struct {
 	RequestMapper            string
 	ResponseMapper           string
 	CacheInterval            int64
-	WebHeaderCollection      map[string]string
+	WebHeaderCollection      map[string]HttpHeaderValue
 	MethodName               string
 
 	ProtogenicVersion string
@@ -156,7 +161,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseType:             method.Output.GoIdent.GoName,
 						RequestMapper:            requestMapper,
 						ResponseMapper:           responseMapper,
-						WebHeaderCollection:      make(map[string]string),
+						WebHeaderCollection:      make(map[string]HttpHeaderValue),
 						MethodName:               method.GoName,
 						CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
 						Callback: Callback{
@@ -168,7 +173,24 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						File:              file.GoImportPath.String(),
 					}
 					for _, webHeader := range http.Header {
-						natsService.WebHeaderCollection[strings.ToLower(webHeader.Key)] = webHeader.Value
+						value := HttpHeaderValue{}
+						switch t := webHeader.Value.(type) {
+						case *rpc.HTTPHeader_Static:
+							{
+								value.Type = "static"
+								value.Value = t.Static
+							}
+						case *rpc.HTTPHeader_Variable:
+							{
+								value.Type = "variable"
+								value.Value = t.Variable
+							}
+						default:
+							{
+								panic("unknown case")
+							}
+						}
+						natsService.WebHeaderCollection[strings.ToLower(webHeader.Key)] = value
 					}
 					path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
 					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "service.http.pb.go"

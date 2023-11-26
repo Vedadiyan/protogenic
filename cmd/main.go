@@ -88,11 +88,15 @@ func RunProtoc() {
 					}
 				}
 			}
-			// if len(f.Messages) > 0 {
-			// err = protogenic.GenerateTypescript(gen, f)
-			// if err != nil {
-			// 	panic(err)
-			// }
+			if _, ok := features["client"]; ok {
+				if len(f.Messages) > 0 {
+					err := protogenic.GenerateTypescript(gen, f)
+					if err != nil {
+						panic(err)
+					}
+				}
+				continue
+			}
 			fileMap := make(map[string]string)
 			for i := 0; i < f.Desc.Imports().Len(); i++ {
 				file := f.Desc.Imports().Get(i)
