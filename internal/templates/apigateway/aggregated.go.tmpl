@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	gateways.Forward[BookingReq, BookingRes]("{{ .Route }}", "{{ .Method }}",  map[string]string {
+	gateways.Forward[{{ .RequestType }}, {{ .ResponseType }}]("{{ .Route }}", "{{ .Method }}",  map[string]string {
 		{{- range $key, $value := .Gateways }}
 			"{{ $key }}": "{{ $value.Namespace }}",
 		{{- end }}
