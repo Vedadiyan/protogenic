@@ -87,7 +87,7 @@ func GenerateAPIGateway(moduleName string, plugin *protogen.Plugin, file *protog
 					RequestType:  fmt.Sprintf("%s%s", inputPrefix, method.Input.GoIdent.GoName),
 					ResponseType: method.Output.GoIdent.GoName,
 				}
-				gateways[strcase.ToCamel(method.GoName)] = gateway
+				gateways[strcase.ToSnake(method.GoName)] = gateway
 				requests[method.Input.GoIdent.GoName] = struct{}{}
 				responses[method.Output.GoIdent.GoName] = struct{}{}
 			}
