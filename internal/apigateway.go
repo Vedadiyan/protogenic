@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	rpc "github.com/vedadiyan/protogenic/internal/autogen"
+	"github.com/vedadiyan/strcase"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
@@ -86,7 +87,7 @@ func GenerateAPIGateway(moduleName string, plugin *protogen.Plugin, file *protog
 					RequestType:  fmt.Sprintf("%s%s", inputPrefix, method.Input.GoIdent.GoName),
 					ResponseType: method.Output.GoIdent.GoName,
 				}
-				gateways[method.GoName] = gateway
+				gateways[strcase.ToCamel(method.GoName)] = gateway
 				requests[method.Input.GoIdent.GoName] = struct{}{}
 				responses[method.Output.GoIdent.GoName] = struct{}{}
 			}
