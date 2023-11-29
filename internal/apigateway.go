@@ -124,7 +124,8 @@ func GenerateAPIGateway(moduleName string, plugin *protogen.Plugin, file *protog
 				UseMeta:           IfNill(apiGateway.UseMeta, false),
 				UseValidation:     IfNill(apiGateway.UseValidation, false),
 			}
-			filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_gateway.pb.go", service.GoName)
+			path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
+			filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + "gateway.pb.go"
 			svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 			var serverCode bytes.Buffer
 			err = apiGatewayTemplate.Execute(&serverCode, gateway)
