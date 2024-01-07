@@ -6,7 +6,9 @@
 package {{ .ImportPath }}
 
 import (
+	{{- if gt .CacheInterval 0}}
 	"time"
+	{{- end }}
 	"fmt"
 	{{- range $key, $value := .WebHeaderCollection }}
     {{- if eq $value.Type "variable" }}
