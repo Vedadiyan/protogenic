@@ -163,7 +163,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseMapper:           responseMapper,
 						WebHeaderCollection:      make(map[string]HttpHeaderValue),
 						MethodName:               method.GoName,
-						CacheInterval:            IfNill(rpcOptions.Configure.CacheInterval, -1),
+						CacheInterval:            IfNill(IfNill(rpcOptions.Configure, rpc.RpcOptions_Configure{}).CacheInterval, -1),
 						Callback: Callback{
 							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
 							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
@@ -287,7 +287,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						ResponseType:   method.Output.GoIdent.GoName,
 						RequestMapper:  requestMapper,
 						ResponseMapper: responseMapper,
-						CacheInterval:  IfNill(rpcOptions.Configure.CacheInterval, -1),
+						CacheInterval:  IfNill(IfNill(rpcOptions.Configure, rpc.RpcOptions_Configure{}).CacheInterval, -1),
 						MethodName:     method.GoName,
 						Callback: Callback{
 							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
