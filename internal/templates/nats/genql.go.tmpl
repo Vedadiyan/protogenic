@@ -44,7 +44,9 @@ func init() {
 			_NS_{{ .MethodName | ToUpperCase }},
 			_QUEUE_{{ .MethodName | ToUpperCase }},
 			handler{{ .MethodName | ToPascalCase}},
-			service.WithCache(time.Hour),
+			{{- if gt .CacheInterval 0}}
+			service.WithCache(time.Millisecond * {{ .CacheInterval }}),
+			{{- end }}
 			{{- if .Callback.OnSuccess }}
 			service.WithOnSuccessCallBacks(
 				{{- range $item :=  .Callback.OnSuccess }}
