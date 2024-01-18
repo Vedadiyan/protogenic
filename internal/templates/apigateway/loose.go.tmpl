@@ -6,54 +6,14 @@
 package {{ .ImportPath }}
 
 import (
-	"fmt"
-
-	"github.com/gofiber/fiber/v2"
-	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/gateways"
-	"github.com/vedadiyan/goal/pkg/proxy"
+	{{- range $index, $value := .ExtraImports }}
+	{{ $value }}
+	{{- end }}
 )
-
-var (
-	proxies map[string]any
-)
-
-{{- range $key, $value := .Gateways }}
-func {{ $key }}(c *fiber.Ctx) error {
-    type (
-        Request = {{ $value.RequestType }}
-        Response = {{ $value.ResponseType }}
-    )
-	var req Request
-	err := helpers.GetJSONReq(c, &req)
-	if err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return err
-	}
-    proxy, ok := proxies["{{ $key }}"].(*proxy.NATSProxy[*Response])
-    if !ok {
-        return fmt.Errorf("response cannot be cast to {{ $value.ResponseType }}")
-    }
-	res, err := proxy.Send(&req)
-	if err != nil {
-		c.Status(fiber.StatusBadGateway)
-		return err
-	}
-	return helpers.SendJSONRes(*res, c)
-}
-{{- end }}
 
 func init() {
-	proxies = make(map[string]any)
-	gateway := gateways.New("{{ .Route }}", func() {
-		{{- range $key, $value := .Gateways }}
-		proxies["{{ $key }}"] = proxy.New("{{ $.ConnName }}", "{{ $value.Namespace }}", func() *{{$value.ResponseType}} {
-			return &{{$value.ResponseType}}{}
-		})
-		{{- end }}
-	})
-	{{- range $key, $value := .Gateways }}
-    gateway.Add("{{ $key }}", "{{ $.Method }}" , {{ $key }})
-    {{- end }}
-    gateways.Register(gateway)
+	{{- range $key, $value := .Gateways}}
+	gateways.Forward[{{ $value.RequestType }}, {{ $value.ResponseType }}]("{{ $.Route }}{{- if ne $key "Ommit" }}/{{ $key }}{{- end}}", "{{ $.Method }}", "{{ $value.Namespace }}" {{ if $.UseMeta }}, gateways.UseMeta() {{ end }} {{ if $.UseValidation }}, gateways.UseValidation {{ end }} )
+	{{- end }}
 }

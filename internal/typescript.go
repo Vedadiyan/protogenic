@@ -2,12 +2,18 @@ package protogenic
 
 import (
 	"bytes"
+	"fmt"
+	"regexp"
+	"strings"
 	"text/template"
 
 	_ "embed"
 
+	rpc "github.com/vedadiyan/protogenic/internal/autogen"
 	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 var (
@@ -15,6 +21,8 @@ var (
 	_types string
 	//go:embed templates/typescript/enums.go.tmpl
 	_enums string
+	//go:embed templates/typescript/client.go.tmpl
+	_client string
 )
 
 type Field struct {
@@ -30,6 +38,17 @@ type Type struct {
 	Name   string
 	Fields []Field
 	IsEnum bool
+}
+
+type Client struct {
+	Name         string
+	RequestType  string
+	ResponseType string
+	Protected    bool
+	Method       string
+	URLParams    string
+	QueryParams  string
+	URL          string
 }
 
 func getType(field *protogen.Field) (string, bool, bool) {
@@ -153,6 +172,66 @@ func GenerateTypescript(plugin *protogen.Plugin, file *protogen.File) error {
 		}
 		str := PostProcess(types)
 		g.P(str.String())
+	}
+	routeParamsPattern, err := regexp.Compile(`:(\w+)`)
+	if err != nil {
+		return err
+	}
+	queryParamsPattern, err := regexp.Compile(`\?.*`)
+	if err != nil {
+		return err
+	}
+	clientTemplate, err := template.New("client").Funcs(_funcs).Parse(_client)
+	if err != nil {
+		return err
+	}
+	for _, service := range file.Services {
+		filename := file.GeneratedFilenamePrefix + fmt.Sprintf("_%s_gateway.pb.ts", service.GoName)
+		serviceOptions := service.Desc.Options().(*descriptorpb.ServiceOptions)
+		apiGateway := proto.GetExtension(serviceOptions, rpc.E_ApiGateway).(*rpc.APIGateway)
+		routeParams := routeParamsPattern.FindAllString(apiGateway.Route, -1)
+		queryParams := queryParamsPattern.FindAllString(apiGateway.Route, -1)
+		urlParamList := make([]string, 0)
+		queryParamList := make([]string, 0)
+		route := apiGateway.Route
+		for _, routeParam := range routeParams {
+			_routeParam := strings.TrimPrefix(routeParam, ":")
+			urlParamList = append(urlParamList, fmt.Sprintf(`'%s'`, _routeParam))
+			route = strings.Replace(route, routeParam, fmt.Sprintf("${input.%s}", _routeParam), 1)
+		}
+		if len(queryParams) > 0 {
+			if len(queryParams) > 1 {
+				return fmt.Errorf("ambiguous query string detected")
+			}
+			queryParams = strings.Split(queryParams[0], "&")
+			for _, queryParam := range queryParams {
+				queryParamList = append(queryParamList, fmt.Sprintf(`'%s'`, queryParam))
+			}
+		}
+		params := strings.Join(urlParamList, ",")
+		qParams := strings.Join(queryParamList, ",")
+		clients := make([]Client, 0)
+		for _, method := range service.Methods {
+			client := Client{}
+			client.URLParams = params
+			client.Name = method.GoName
+			client.Method = IfNill(apiGateway.Method, "GET")
+			client.RequestType = method.Input.GoIdent.GoName
+			client.ResponseType = method.Output.GoIdent.GoName
+			client.QueryParams = qParams
+			if apiGateway.Authenticated != nil {
+				client.Protected = *apiGateway.Authenticated
+			}
+			client.URL = route
+			clients = append(clients, client)
+		}
+		svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
+		var buffer bytes.Buffer
+		err = clientTemplate.Execute(&buffer, clients)
+		if err != nil {
+			return err
+		}
+		svc.P(buffer.String())
 	}
 	return nil
 }

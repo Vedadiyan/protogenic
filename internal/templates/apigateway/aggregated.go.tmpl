@@ -6,93 +6,17 @@
 package {{ .ImportPath }}
 
 import (
-	"strings"
-	"sync"
-
-	"github.com/gofiber/fiber/v2"
-	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/gateways"
-	"github.com/vedadiyan/goal/pkg/protoutil"
-	"github.com/vedadiyan/goal/pkg/proxy"
+	{{- range $index, $value := .ExtraImports }}
+	{{ $value }}
+	{{- end }}
 )
-
-type (
-    Request = {{ .RequestType }}
-    Response = {{.ResponseType }}
-)
-
-var (
-	proxies map[string]*proxy.NATSProxy[*Response]
-)
-
-{{- range $key, $value := .Gateways }}
-func {{ $key }}(c *fiber.Ctx) error {
-	var req Request
-	err := helpers.GetJSONReq(c, &req)
-	if err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return err
-	}
-	res, err := proxies["{{ $key }}"].Send(&req)
-	if err != nil {
-		c.Status(fiber.StatusBadGateway)
-		return err
-	}
-	return helpers.SendJSONRes(*res, c)
-}
-{{- end }}
-
-func aggregated(c *fiber.Ctx) error {
-	var req Request
-	err := helpers.GetJSONReq(c, &req)
-	if err != nil {
-		c.Status(fiber.StatusBadRequest)
-		return err
-	}
-	var wg sync.WaitGroup
-	var mut sync.Mutex
-	responses := make(map[string]map[string]any)
-	for key, value := range proxies {
-		wg.Add(1)
-		go func(key string, value *proxy.NATSProxy[*Response]) {
-			defer wg.Done()
-			res, err := value.Send(&req)
-			mut.Lock()
-			defer mut.Unlock()
-			if err != nil {
-				c.Status(207)
-				responses[key] = map[string]any{
-					"error": err.Error(),
-				}
-				return
-			}
-			mapper, err := protoutil.Marshal(*res)
-			if err != nil {
-				c.Status(207)
-				responses[key] = map[string]any{
-					"error": err.Error(),
-				}
-				return
-			}
-			responses[strings.ToLower(key)] = mapper
-		}(key, value)
-	}
-	wg.Wait()
-	return c.JSON(responses)
-}
 
 func init() {
-	proxies = make(map[string]*proxy.NATSProxy[*Response])
-	gateway := gateways.New("{{ .Route }}", func() {
+	gateways.Forward[{{ .RequestType }}, {{ .ResponseType }}]("{{ .Route }}", "{{ .Method }}",  map[string]string {
 		{{- range $key, $value := .Gateways }}
-		proxies["{{ $key }}"] = proxy.New("{{ $.ConnName }}", "{{ $value.Namespace }}", func() *Response {
-			return &Response{}
-		})
+			"{{ $key }}": "{{ $value.Namespace }}",
 		{{- end }}
-	})
-	{{- range $key, $value := .Gateways }}
-    gateway.Add("{{ $key }}", "{{ $.Method }}" , {{ $key }})
-    {{- end }}
-    gateway.Add("", "{{ $.Method }}", aggregated)
-    gateways.Register(gateway)
+	}{{ if .UseMeta }}, gateways.UseMeta() {{ end }} {{ if .UseValidation }}, gateways.UseValidation {{ end }})
 }
+

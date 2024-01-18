@@ -1,19 +1,38 @@
 package main
 
 import (
+	 _ "{{ .Import }}"
+
+	"os"
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	auto "github.com/vedadiyan/goal/pkg/config/auto"
 	"github.com/vedadiyan/goal/pkg/service"
-	 _ "{{ .Import }}"
 )
 
-func main() {
-	{{- range $key, $value := .NatsConns}}
-	helpers.AddNats("{{ $key }}", "{{ $value }}")
+func init() {
+	{{- range $i, $key := .NatsConns}}
+	helpers.AddNats("{{ $key }}")
 	{{- end }}
+	{{- range $i, $key := .PostgresConns}}
+	helpers.AddPostgres("{{ $key }}")
+	{{- end }}
+	{{- range $i, $key := .UseRedis}}
+	helpers.AddRedis("{{ $key }}")
+	{{- end }}	
+	{{- range $i, $key := .UseMongoDb}}
+	helpers.AddMongo("{{ $key }}")
+	{{- end }}	
 	{{- if .UseInfluxDb }}
-	helpers.UseInfluxDb("{{ .InlfuxDb }}", "{{ .ModuleName }}")
+	helpers.AddInfluxDb("{{ .UseInfluxDb }}", "{{ .ModuleName }}")
 	{{- end }}
-	auto.Bootstrap("{{ .ETCD }}")
+}
+
+func main() {
+	etcd := os.Getenv("ETCD_URL")
+	if len(etcd) == 0 { 
+		auto.Bootstrap(auto.ForConfigMap())
+	} else {
+		auto.Bootstrap(auto.ForETCD(etcd))
+	}
 	service.Bootstrap()
 }

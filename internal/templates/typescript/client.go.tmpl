@@ -1,24 +1,30 @@
 import axios from "axios";
-
-export async function clientAs(baseUrl: string, input : {{ .RequestType }}, {{ if .Protected }} token: string {{ end }}) : {{ .ResponseType }} | Error {
+import * as model from "./model.pb";
+{{ range $client := . }} 
+export async function {{ $client.Name | ToLowerCase }}ClientAsync(baseUrl: string, input : model.{{ $client.RequestType }} {{ if $client.Protected }}, token: string {{ end }}) : Promise<model.{{ $client.ResponseType }} | Error> {
+    let url = `${baseUrl}{{ $client.URL }}/{{ $client.Name }}`
+    {{ if $client.QueryParams }} 
+    url += '?' + [{{ $client.QueryParams}}].filter(x=> input.$raw[x]).map(x=> `${x}=${input.$raw[x]}`).join('&')
+    {{ end }}
     const config = {
-        method: '{{ .Method }}',
-        url: baseUrl,
+        method: '{{ $client.Method }}',
+        url: url,
+        {{- if and (ne $client.Method "GET") (ne $client.Method "DELETE")}}
+        data: input.serialize({{ if $client.URLParams }}[{{ $client.URLParams }}]{{ end }}),
+        {{- end }}
         headers: { 
-            {{ if .Protected }}
+            {{- if $client.Protected }}
             'Authorization': `Bearer ${token}`, 
-            {{ end }}
+            {{- end }}
             'Content-Type': 'application/json'
-        },
+        }
     };
-    if(config.method.toLowerCase() != 'get') { 
-        config.data = input.serialize([{{ .URLParams }}]);
-    }
     try {
         const response = await axios(config);
-        return {{ .ResponseType }}.deserialize(response.data)
+        return model.{{ $client.ResponseType }}.deserialize(response.data)
     }
     catch(exception) {
-        return exception.message
+        return exception as Error
     }
 }
+{{ end }}

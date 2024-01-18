@@ -95,10 +95,16 @@ export class {{ $i.Name }} {
         {{- end }}
     {{ end }}
     public serialize(except? : string[]): string {
-        return JSON.stringify(this.{{ "$data" }}, object.keys(this).filter(x=> !except.has(x)))
+        if(except) {
+            return JSON.stringify(this.{{ "$data" }}, Object.keys(this).filter(x=> !except.includes(x)))
+        }
+        return JSON.stringify(this.{{ "$data" }})
     }
-    public static deserialize(json: string): {{ $i.Name }} {
-        return new {{ $i.Name }}(JSON.parse(json))
+    public static deserialize(json: string | object): {{ $i.Name }} {
+        if(typeof(json) == "string") {
+            return new {{ $i.Name }}(JSON.parse(json))
+        }
+        return new {{ $i.Name }}(json)
     }
     public static fromArray(data: []): {{ $i.Name }}[] {
         const array: {{ $i.Name }}[] = [] 

@@ -6,22 +6,28 @@
 package {{ .ImportPath }}
 
 import (
-	{{- if gt .CacheInterval 0}}
 	"time"
-	{{- end }}
 
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
+	"github.com/vedadiyan/goal/pkg/db/postgres"
 	"github.com/vedadiyan/goal/pkg/service"
+	{{- range $index, $value := .ExtraImports }}
+	{{ $value }}
+	{{- end }}
 )
 
 const (
+	_DSN_{{ .MethodName | ToUpperCase }} 		 = "{{ .Dsn }}"
 	_CN_{{ .MethodName | ToUpperCase }}          = "{{ .ConnName }}"
 	_NS_{{ .MethodName | ToUpperCase }}          = "{{ .Namespace }}"
-	_QUEUE_{{ .MethodName | ToUpperCase }}      = "{{ .Queue }}"
+	_QUEUE_{{ .MethodName | ToUpperCase }}       = "{{ .Queue }}"
+	_TYPE_{{ .MethodName | ToUpperCase }}        = {{ if eq .Type "command" }} postgres.COMMAND {{ else if eq .Type "query" }} postgres.QUERY {{ end }}
 )
 
 var (
-	_query{{ .MethodName | ToPascalCase }} []byte
+	_reqMapper{{ .MethodName | ToPascalCase }} []byte
+	_resMapper{{ .MethodName | ToPascalCase }} []byte
+	_sql{{ .MethodName | ToPascalCase }}       []byte
 )
 
 type (
@@ -30,8 +36,16 @@ type (
 )
 
 func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalCase }}) (*Response{{ .MethodName | ToPascalCase }}, error) {
+	arguments, err := helpers.ExecToMap(m, _reqMapper{{ .MethodName | ToPascalCase }})
+	if err != nil {
+		return nil, err
+	}
+	res, err := postgres.Handle(_DSN_{{ .MethodName | ToUpperCase }} , _TYPE_{{ .MethodName | ToUpperCase }} , string(_sql{{ .MethodName | ToPascalCase }}), arguments)
+	if err != nil {
+		return nil, err
+	}
 	var response Response{{ .MethodName | ToPascalCase }}
-	err := helpers.Exec(m, _query{{ .MethodName | ToPascalCase }}, &response)
+	err = helpers.ExecFromMap(map[string]any {"data": res}, _resMapper{{ .MethodName | ToPascalCase }}, &response)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +53,9 @@ func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalC
 }
 
 func init() {
-	_query{{ .MethodName | ToPascalCase }} = {{ .Query }}
+	_reqMapper{{ .MethodName | ToPascalCase }} = {{ .RequestMapper }}
+	_resMapper{{ .MethodName | ToPascalCase }} = {{ .ResponseMapper }}
+	_sql{{ .MethodName | ToPascalCase }} = {{ .Sql }}
 	service.Register(
 		service.New(
 			_CN_{{ .MethodName | ToUpperCase }},
