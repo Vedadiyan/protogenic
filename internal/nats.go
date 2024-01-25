@@ -193,7 +193,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						natsService.WebHeaderCollection[strings.ToLower(webHeader.Key)] = value
 					}
 					path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
-					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + fmt.Sprintf("service.%s.pb.go", method.GoName)
+					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + fmt.Sprintf("%s.%s.pb.go", service.GoName, method.GoName)
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := serviceTemplate.Execute(&serverCode, natsService)
@@ -298,7 +298,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						File:              file.GoImportPath.String(),
 					}
 					path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
-					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + fmt.Sprintf("service.%s.pb.go", method.GoName)
+					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + fmt.Sprintf("%s.%s.pb.go", service.GoName, method.GoName)
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := postgresqlTemplate.Execute(&serverCode, postgresService)
@@ -340,7 +340,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					}
 
 					path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
-					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + fmt.Sprintf("service.%s.pb.go", method.GoName)
+					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + fmt.Sprintf("%s.%s.pb.go", service.GoName, method.GoName)
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := genqlTemplate.Execute(&serverCode, genqlService)
