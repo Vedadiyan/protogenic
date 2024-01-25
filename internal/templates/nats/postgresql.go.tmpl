@@ -6,7 +6,9 @@
 package {{ .ImportPath }}
 
 import (
+	{{- if gt .CacheInterval 0}}
 	"time"
+	{{- end }}
 
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/db/postgres"
