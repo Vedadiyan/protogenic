@@ -227,7 +227,10 @@ func GenerateTypescript(plugin *protogen.Plugin, file *protogen.File) error {
 		}
 		svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 		var buffer bytes.Buffer
-		err = clientTemplate.Execute(&buffer, clients)
+		err = clientTemplate.Execute(&buffer, struct {
+			ServiceName string
+			Clients     []Client
+		}{ServiceName: service.GoName, Clients: clients})
 		if err != nil {
 			return err
 		}

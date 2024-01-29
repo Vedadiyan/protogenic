@@ -1,30 +1,39 @@
 import axios from "axios";
 import * as model from "./model.pb";
-{{ range $client := . }} 
-export async function {{ $client.Name | ToLowerCase }}ClientAsync(baseUrl: string, input : model.{{ $client.RequestType }} {{ if $client.Protected }}, token: string {{ end }}) : Promise<model.{{ $client.ResponseType }} | Error> {
-    let url = `${baseUrl}{{ $client.URL }}/{{ $client.Name }}`
-    {{ if $client.QueryParams }} 
-    url += '?' + [{{ $client.QueryParams}}].filter(x=> input.$raw[x]).map(x=> `${x}=${input.$raw[x]}`).join('&')
-    {{ end }}
-    const config = {
-        method: '{{ $client.Method }}',
-        url: url,
-        {{- if and (ne $client.Method "GET") (ne $client.Method "DELETE")}}
-        data: input.serialize({{ if $client.URLParams }}[{{ $client.URLParams }}]{{ end }}),
-        {{- end }}
-        headers: { 
-            {{- if $client.Protected }}
-            'Authorization': `Bearer ${token}`, 
+
+export default class {{ .ServiceName | ToPascalCase }} {
+    private readonly _baseUrl: string
+
+    constructor(baseUrl: string) {
+        this._baseUrl = baseUrl
+    }
+    {{ range $client := .Clients }} 
+    async {{ $client.Name | ToCamelCase }}Async(input : model.{{ $client.RequestType }} {{ if $client.Protected }}, token: string {{ end }}) : Promise<model.{{ $client.ResponseType }} | Error> {
+        const url = `${this_baseUrl}{{ $client.URL }}{{- if ne $client.Name "Ommit"}}/{{ $client.Name }}{{end}}`
+        {{ if $client.QueryParams }} 
+        url += '?' + [{{ $client.QueryParams}}].filter(x=> input.$raw[x]).map(x=> `${x}=${input.$raw[x]}`).join('&')
+        {{ end }}
+        const config = {
+            method: '{{ $client.Method }}',
+            url: url,
+            {{- if and (ne $client.Method "GET") (ne $client.Method "DELETE")}}
+            data: input.serialize({{ if $client.URLParams }}[{{ $client.URLParams }}]{{ end }}),
             {{- end }}
-            'Content-Type': 'application/json'
+            headers: { 
+                {{- if $client.Protected }}
+                'Authorization': `Bearer ${token}`, 
+                {{- end }}
+                'Content-Type': 'application/json'
+            }
+        };
+        try {
+            const response = await axios(config);
+            return model.{{ $client.ResponseType }}.deserialize(response.data)
         }
-    };
-    try {
-        const response = await axios(config);
-        return model.{{ $client.ResponseType }}.deserialize(response.data)
+        catch(exception) {
+            return exception as Error
+        }
     }
-    catch(exception) {
-        return exception as Error
-    }
+    {{ end }}
 }
-{{ end }}
+
