@@ -26,6 +26,7 @@ export default class {{ .ServiceName | ToPascalCase }} {
                 'Content-Type': 'application/json'
             }
         };
+        
         try {
             const response = await axios(config);
             return model.{{ $client.ResponseType }}.deserialize(response.data)
