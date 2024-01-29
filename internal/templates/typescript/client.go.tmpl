@@ -8,7 +8,7 @@ export default class {{ .ServiceName | ToPascalCase }} {
         this._baseUrl = baseUrl
     }
     {{ range $client := .Clients }} 
-    async {{ $client.Name | ToCamelCase }}Async(input : model.{{ $client.RequestType }} {{ if $client.Protected }}, token: string {{ end }}) : Promise<model.{{ $client.ResponseType }} | Error> {
+    async {{ if eq $client.Name "Ommit"}}{{ $client.Method | ToLowerCase}}{{ else }}{{ $client.Name | ToCamelCase }}{{end}}Async(input : model.{{ $client.RequestType }} {{ if $client.Protected }}, token: string {{ end }}) : Promise<model.{{ $client.ResponseType }} | Error> {
         const url = `${this._baseUrl}{{ $client.URL }}{{- if ne $client.Name "Ommit"}}/{{ $client.Name }}{{end}}`
         {{ if $client.QueryParams }} 
         url += '?' + [{{ $client.QueryParams}}].filter(x=> input.$raw[x]).map(x=> `${x}=${input.$raw[x]}`).join('&')
