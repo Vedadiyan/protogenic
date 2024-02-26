@@ -47,40 +47,6 @@ func init () {
 	reqMapper = {{ .RequestMapper }}
 	resMapper = {{ .ResponseMapper }}
 	urlTemplate = http.NewUrlTemplate(URL)
-	handler := func(m *Request) (*Response, error) {
-		id := uuid.New().String()
-		constants := map[string]any { "CONTEXT_ID": id }
-		{{- if and (eq (index .WebHeaderCollection "content-type").Type "static") (eq (index .WebHeaderCollection "content-type").Value "application/x-www-form-urlencoded")}} 
-		req, err := helpers.ToURLEncodedReqWithConstants(m, reqMapper, constants)
-		{{- else }}
-		req, err := helpers.ToJSONReq(m, reqMapper)
-		{{- end }}
-		if err != nil {
-			return nil, err
-		}
-		url, err := urlTemplate.Url(req.RouteValues, req.QueryParams)
-		if err != nil {
-			return nil, err
-		}
-		webHeaders, err := getWHC{{ .MethodName | ToPascalCase }}()
-		if err != nil {
-			return nil, err
-		}
-		res, err := http.Send(url, webHeaders, METHOD , req.Body)
-		if err != nil {
-			return nil, err
-		}
-		if res.Status() > 399 && res.Status() <= 599 {
-			return nil, fmt.Errorf(`%d`, res.Status())
-		}
-		var response Response
-		err = helpers.FromJSONResWithConstants(res.Reader(), resMapper, &response, constants)
-		if err != nil {
-			return nil, err
-		}
-		return &response, nil
-	}
-
 	getWHC := func() (http.IWebHeaderCollection, error) {
 		whc := http.NewWebHeaderCollection()
 		{{- range $key, $value := .WebHeaderCollection }}
@@ -102,6 +68,40 @@ func init () {
 		}
 		return whc, nil
 	}
+	handler := func(m *Request) (*Response, error) {
+		id := uuid.New().String()
+		constants := map[string]any { "CONTEXT_ID": id }
+		{{- if and (eq (index .WebHeaderCollection "content-type").Type "static") (eq (index .WebHeaderCollection "content-type").Value "application/x-www-form-urlencoded")}} 
+		req, err := helpers.ToURLEncodedReqWithConstants(m, reqMapper, constants)
+		{{- else }}
+		req, err := helpers.ToJSONReq(m, reqMapper)
+		{{- end }}
+		if err != nil {
+			return nil, err
+		}
+		url, err := urlTemplate.Url(req.RouteValues, req.QueryParams)
+		if err != nil {
+			return nil, err
+		}
+		webHeaders, err := getWHC()
+		if err != nil {
+			return nil, err
+		}
+		res, err := http.Send(url, webHeaders, METHOD , req.Body)
+		if err != nil {
+			return nil, err
+		}
+		if res.Status() > 399 && res.Status() <= 599 {
+			return nil, fmt.Errorf(`%d`, res.Status())
+		}
+		var response Response
+		err = helpers.FromJSONResWithConstants(res.Reader(), resMapper, &response, constants)
+		if err != nil {
+			return nil, err
+		}
+		return &response, nil
+	}
+
 	service.Register(
 		service.New(
 			CN,
