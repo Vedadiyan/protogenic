@@ -74,7 +74,7 @@ func init () {
 		{{- if and (eq (index .WebHeaderCollection "content-type").Type "static") (eq (index .WebHeaderCollection "content-type").Value "application/x-www-form-urlencoded")}} 
 		req, err := helpers.ToURLEncodedReqWithConstants(m, reqMapper, constants)
 		{{- else }}
-		req, err := helpers.ToJSONReq(m, reqMapper)
+		req, err := helpers.ToJSONReqWithConstants(m, reqMapper, constants)
 		{{- end }}
 		if err != nil {
 			return nil, err
