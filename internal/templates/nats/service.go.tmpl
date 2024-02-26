@@ -16,6 +16,7 @@ import (
 	{{ break }}
 	{{- end }}
 	{{- end }}
+	"github.com/google/uuid"
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/http"
 	"github.com/vedadiyan/goal/pkg/service"
@@ -47,8 +48,10 @@ func init () {
 	resMapper = {{ .ResponseMapper }}
 	urlTemplate = http.NewUrlTemplate(URL)
 	handler := func(m *Request) (*Response, error) {
+		id := uuid.New().String()
+		constants := map[string]any { "CONTEXT_ID": id }
 		{{- if and (eq (index .WebHeaderCollection "content-type").Type "static") (eq (index .WebHeaderCollection "content-type").Value "application/x-www-form-urlencoded")}} 
-		req, err := helpers.ToURLEncodedReq(m, reqMapper)
+		req, err := helpers.ToURLEncodedReqWithConstants(m, reqMapper, constants)
 		{{- else }}
 		req, err := helpers.ToJSONReq(m, reqMapper)
 		{{- end }}
@@ -71,7 +74,7 @@ func init () {
 			return nil, fmt.Errorf(`%d`, res.Status())
 		}
 		var response Response
-		err = helpers.FromJSONRes(res.Reader(), resMapper, &response)
+		err = helpers.FromJSONResWithConstants(res.Reader(), resMapper, &response, constants)
 		if err != nil {
 			return nil, err
 		}
