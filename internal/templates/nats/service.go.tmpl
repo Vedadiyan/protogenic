@@ -20,6 +20,7 @@ import (
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/http"
 	"github.com/vedadiyan/goal/pkg/service"
+	"github.com/vedadiyan/genql"
 )
 
 func init () {
@@ -71,10 +72,11 @@ func init () {
 	handler := func(m *Request) (*Response, error) {
 		id := uuid.New().String()
 		constants := map[string]any { "CONTEXT_ID": id }
+		vars := make(map[string]any)
 		{{- if and (eq (index .WebHeaderCollection "content-type").Type "static") (eq (index .WebHeaderCollection "content-type").Value "application/x-www-form-urlencoded")}} 
-		req, err := helpers.ToURLEncodedReqWithConstants(m, reqMapper, constants)
+		req, err := helpers.ToURLEncodedReq(m, reqMapper, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
 		{{- else }}
-		req, err := helpers.ToJSONReqWithConstants(m, reqMapper, constants)
+		req, err := helpers.ToJSONReq(m, reqMapper, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
 		{{- end }}
 		if err != nil {
 			return nil, err
@@ -95,7 +97,7 @@ func init () {
 			return nil, fmt.Errorf(`%d`, res.Status())
 		}
 		var response Response
-		err = helpers.FromJSONResWithConstants(res.Reader(), resMapper, &response, constants)
+		err = helpers.FromJSONRes(res.Reader(), resMapper, &response, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
 		if err != nil {
 			return nil, err
 		}
