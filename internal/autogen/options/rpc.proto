@@ -93,4 +93,5 @@ extend google.protobuf.FileOptions {
     repeated string useMongoDb = 9001;
     repeated string useRedis = 9002;
     string useInfluxDb = 9003;
+    repeated string useEnv = 9004;
 }
