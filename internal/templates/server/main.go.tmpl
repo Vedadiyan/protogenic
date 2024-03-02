@@ -1,11 +1,14 @@
 package main
 
 import (
+	"strconv"
+	"strings"
 	 _ "{{ .Import }}"
 
 	"os"
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	auto "github.com/vedadiyan/goal/pkg/config/auto"
+	"github.com/vedadiyan/goal/pkg/di"
 	"github.com/vedadiyan/goal/pkg/service"
 )
 
@@ -25,14 +28,15 @@ func init() {
 	{{- if .UseInfluxDb }}
 	helpers.AddInfluxDb("{{ .UseInfluxDb }}", "{{ .ModuleName }}")
 	{{- end }}
-	{{- if gt (len .UseEnv) 0}}
 	envs := make(map[string]any)
 	{{- range $i, $env := .UseEnv }}
-	if(err := AddEnv("{{$env}}", envs); err != nil) {
+	if err := AddEnv("{{$env}}", envs); err != nil {
 		panic(err)
 	}
 	{{- end}} 
-	{{- end }}
+	di.AddSinletonWithName("ENVS", func() (instance *map[string]any, err error) {
+		return &envs, nil
+	})
 }
 
 func AddEnv(key string, envs map[string]any) error {

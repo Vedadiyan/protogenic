@@ -18,6 +18,7 @@ import (
 	{{- end }}
 	"github.com/google/uuid"
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
+	"github.com/vedadiyan/goal/pkg/di"
 	"github.com/vedadiyan/goal/pkg/http"
 	"github.com/vedadiyan/goal/pkg/service"
 	"github.com/vedadiyan/genql"
@@ -70,8 +71,15 @@ func init () {
 		return whc, nil
 	}
 	handler := func(m *Request) (*Response, error) {
+		envs, err := di.ResolveWithName[map[string]any]("ENVS", nil)
+		if err != nil {
+			return nil, err
+		}
 		id := uuid.New().String()
-		constants := map[string]any { "CONTEXT_ID": id }
+		constants := map[string]any{"CONTEXT_ID": id}
+		for key, value := range *envs {
+			constants[key] = value
+		}
 		vars := make(map[string]any)
 		{{- if and (eq (index .WebHeaderCollection "content-type").Type "static") (eq (index .WebHeaderCollection "content-type").Value "application/x-www-form-urlencoded")}} 
 		req, err := helpers.ToURLEncodedReq(m, reqMapper, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
