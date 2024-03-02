@@ -10,6 +10,7 @@ import (
 	_ "embed"
 
 	rpc "github.com/vedadiyan/protogenic/internal/autogen"
+	"github.com/vedadiyan/strcase"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -197,7 +198,7 @@ func GenerateTypescript(plugin *protogen.Plugin, file *protogen.File) error {
 		for _, routeParam := range routeParams {
 			_routeParam := strings.TrimPrefix(routeParam, ":")
 			urlParamList = append(urlParamList, fmt.Sprintf(`'%s'`, _routeParam))
-			route = strings.Replace(route, routeParam, fmt.Sprintf("${input.%s}", _routeParam), 1)
+			route = strings.Replace(route, routeParam, fmt.Sprintf("${input.%s}", strcase.ToCamel(_routeParam)), 1)
 		}
 		if len(queryParams) > 0 {
 			if len(queryParams) > 1 {
@@ -227,7 +228,10 @@ func GenerateTypescript(plugin *protogen.Plugin, file *protogen.File) error {
 		}
 		svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 		var buffer bytes.Buffer
-		err = clientTemplate.Execute(&buffer, clients)
+		err = clientTemplate.Execute(&buffer, struct {
+			ServiceName string
+			Clients     []Client
+		}{ServiceName: service.GoName, Clients: clients})
 		if err != nil {
 			return err
 		}

@@ -17,6 +17,6 @@ func init() {
 		{{- range $key, $value := .Gateways }}
 			"{{ $key }}": "{{ $value.Namespace }}",
 		{{- end }}
-	}{{ if .UseMeta }}, gateways.UseMeta() {{ end }} {{ if .UseValidation }}, gateways.UseValidation {{ end }})
+	}{{ if .UseMeta }}, gateways.UseMeta() {{ end }} {{ if .UseValidation }}, gateways.UseValidation("options.validation") {{ end }})
 }
 

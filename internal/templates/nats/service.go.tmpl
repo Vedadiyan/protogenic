@@ -16,96 +16,108 @@ import (
 	{{ break }}
 	{{- end }}
 	{{- end }}
+	"github.com/google/uuid"
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
+	"github.com/vedadiyan/goal/pkg/di"
 	"github.com/vedadiyan/goal/pkg/http"
 	"github.com/vedadiyan/goal/pkg/service"
+	"github.com/vedadiyan/genql"
 )
 
-const (
-	_CN_{{ .MethodName | ToUpperCase }}          = "{{ .ConnName }}"
-	_NS_{{ .MethodName | ToUpperCase }}          = "{{ .Namespace }}"
-	_AUTH_SVC_{{ .MethodName | ToUpperCase }}   = "{{ .AuthService }}"
-	_AUTH_SVC_CI_{{ .MethodName | ToUpperCase }} = {{ .AuthServiceCacheInterval }}
-	_QUEUE_{{ .MethodName | ToUpperCase }}      = "{{ .Queue }}"
-	_URL_{{ .MethodName | ToUpperCase }}         = "{{ .Url }}"
-	_METHOD_{{ .MethodName | ToUpperCase }}    = "{{ .Method }}"
-)
+func init () {
+	type (
+		Request  = {{ .RequestType }}
+		Response = {{ .ResponseType}}
+	)
 
-var (
-	_url{{ .MethodName | ToPascalCase }}       *http.UrlTemplate
-	_reqMapper{{ .MethodName | ToPascalCase }} []byte
-	_resMapper{{ .MethodName | ToPascalCase }} []byte
-)
+	const (
+		CN          	= "{{ .ConnName }}"
+		NS          	= "{{ .Namespace }}"
+		AUTH_SVC   		= "{{ .AuthService }}"
+		AUTH_SVC_CI 	= {{ .AuthServiceCacheInterval }}
+		QUEUE      		= "{{ .Queue }}"
+		URL         	= "{{ .Url }}"
+		METHOD    		= "{{ .Method }}"
+	)
 
-type (
-	Request{{ .MethodName | ToPascalCase }}  = {{ .RequestType }}
-	Response{{ .MethodName | ToPascalCase }} = {{ .ResponseType}}
-)
+	var (
+		urlTemplate       	*http.UrlTemplate
+		reqMapper 			[]byte
+		resMapper 			[]byte
+	)
 
-func handler{{ .MethodName | ToPascalCase}}(m *Request{{ .MethodName | ToPascalCase }}) (*Response{{ .MethodName | ToPascalCase }}, error) {
-	{{- if and (eq (index .WebHeaderCollection "content-type").Type "static") (eq (index .WebHeaderCollection "content-type").Value "application/x-www-form-urlencoded")}} 
-	req, err := helpers.ToURLEncodedReq(m, _reqMapper{{ .MethodName | ToPascalCase }})
-	{{- else }}
-	req, err := helpers.ToJSONReq(m, _reqMapper{{ .MethodName | ToPascalCase }})
-	{{- end }}
-	if err != nil {
-		return nil, err
+	reqMapper = {{ .RequestMapper }}
+	resMapper = {{ .ResponseMapper }}
+	urlTemplate = http.NewUrlTemplate(URL)
+	getWHC := func() (http.IWebHeaderCollection, error) {
+		whc := http.NewWebHeaderCollection()
+		{{- range $key, $value := .WebHeaderCollection }}
+		{{- if eq $value.Type "static" }}
+		whc.Add("{{ $key }}", "{{ $value.Value }}")
+		{{- else if eq $value.Type "variable" }}
+		whc.Add("{{ $key }}", os.Getenv("{{ $value.Value }}"))
+		{{- end }} 
+		{{- end }}
+		if AUTH_SVC!= "" {
+			webHeaders, err :=
+				helpers.GetAuthHeaders(CN, AUTH_SVC , AUTH_SVC_CI)
+			if err != nil {
+				return nil, err
+			}
+			for key, value := range webHeaders {
+				whc.Add(key, value)
+			}
+		}
+		return whc, nil
 	}
-	url, err := _url{{ .MethodName | ToPascalCase }}.Url(req.RouteValues, req.QueryParams)
-	if err != nil {
-		return nil, err
-	}
-	webHeaders, err := getWHC{{ .MethodName | ToPascalCase }}()
-	if err != nil {
-		return nil, err
-	}
-	res, err := http.Send(url, webHeaders, _METHOD_{{ .MethodName | ToUpperCase }} , req.Body)
-	if err != nil {
-		return nil, err
-	}
-	if res.Status() > 399 && res.Status() <= 599 {
-		return nil, fmt.Errorf(`%d`, res.Status())
-	}
-	var response Response{{ .MethodName | ToPascalCase }}
-	err = helpers.FromJSONRes(res.Reader(), _resMapper{{ .MethodName | ToPascalCase }}, &response)
-	if err != nil {
-		return nil, err
-	}
-	return &response, nil
-}
-
-func getWHC{{ .MethodName | ToPascalCase }}() (http.IWebHeaderCollection, error) {
-	whc := http.NewWebHeaderCollection()
-	{{- range $key, $value := .WebHeaderCollection }}
-    {{- if eq $value.Type "static" }}
-	whc.Add("{{ $key }}", "{{ $value.Value }}")
-	{{- else if eq $value.Type "variable" }}
-	whc.Add("{{ $key }}", os.Getenv("{{ $value.Value }}"))
-	{{- end }} 
-    {{- end }}
-	if _AUTH_SVC_{{ .MethodName | ToUpperCase }}!= "" {
-		webHeaders, err :=
-			helpers.GetAuthHeaders(_CN_{{ .MethodName | ToUpperCase }}, _AUTH_SVC_{{ .MethodName | ToUpperCase }} , _AUTH_SVC_CI_{{ .MethodName | ToUpperCase }})
+	handler := func(m *Request) (*Response, error) {
+		envs, err := di.ResolveWithName[map[string]any]("ENVS", nil)
 		if err != nil {
 			return nil, err
 		}
-		for key, value := range webHeaders {
-			whc.Add(key, value)
+		id := uuid.New().String()
+		constants := map[string]any{"CONTEXT_ID": id}
+		for key, value := range *envs {
+			constants[key] = value
 		}
+		vars := make(map[string]any)
+		{{- if and (eq (index .WebHeaderCollection "content-type").Type "static") (eq (index .WebHeaderCollection "content-type").Value "application/x-www-form-urlencoded")}} 
+		req, err := helpers.ToURLEncodedReq(m, reqMapper, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
+		{{- else }}
+		req, err := helpers.ToJSONReq(m, reqMapper, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
+		{{- end }}
+		if err != nil {
+			return nil, err
+		}
+		url, err := urlTemplate.Url(req.RouteValues, req.QueryParams)
+		if err != nil {
+			return nil, err
+		}
+		webHeaders, err := getWHC()
+		if err != nil {
+			return nil, err
+		}
+		res, err := http.Send(url, webHeaders, METHOD , req.Body)
+		if err != nil {
+			return nil, err
+		}
+		if res.Status() > 399 && res.Status() <= 599 {
+			return nil, fmt.Errorf(`%d`, res.Status())
+		}
+		var response Response
+		err = helpers.FromJSONRes(res.Reader(), resMapper, &response, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
+		if err != nil {
+			return nil, err
+		}
+		return &response, nil
 	}
-	return whc, nil
-}
 
-func init() {
-	_reqMapper{{ .MethodName | ToPascalCase }} = {{ .RequestMapper }}
-	_resMapper{{ .MethodName | ToPascalCase }} = {{ .ResponseMapper }}
-	_url{{ .MethodName | ToPascalCase }} = http.NewUrlTemplate(_URL_{{ .MethodName | ToUpperCase }})
 	service.Register(
 		service.New(
-			_CN_{{ .MethodName | ToUpperCase }},
-			_NS_{{ .MethodName | ToUpperCase }},
-			_QUEUE_{{ .MethodName | ToUpperCase }},
-			handler{{ .MethodName | ToPascalCase}},
+			CN,
+			NS,
+			QUEUE,
+			handler,
 			{{- if gt .CacheInterval 0}}
 			service.WithCache(time.Millisecond * {{ .CacheInterval }}),
 			{{- end }}
