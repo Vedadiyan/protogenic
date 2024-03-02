@@ -25,6 +25,41 @@ func init() {
 	{{- if .UseInfluxDb }}
 	helpers.AddInfluxDb("{{ .UseInfluxDb }}", "{{ .ModuleName }}")
 	{{- end }}
+	{{- if gt (len .UseEnv) 0}}
+	envs := make(map[string]any)
+	{{- range $i, $env := .UseEnv }}
+	if(err := AddEnv("{{$env}}", envs); err != nil) {
+		panic(err)
+	}
+	{{- end}} 
+	{{- end }}
+}
+
+func AddEnv(key string, envs map[string]any) error {
+	segments := strings.Split(key, ":")
+	keyType := segments[len(segments)-1]
+	value := os.Getenv(key)
+	switch strings.ToLower(keyType) {
+	case "number":
+		{
+			number, err := strconv.ParseFloat(value, 64)
+			if err != nil {
+				return err
+			}
+			envs[key] = number
+			return nil
+		}
+	case "boolean":
+		{
+			envs[key] = strings.ToLower(value) == "true"
+			return nil
+		}
+	default:
+		{
+			envs[key] = value
+			return nil
+		}
+	}
 }
 
 func main() {

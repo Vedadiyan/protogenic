@@ -33,6 +33,7 @@ type Server struct {
 	UseMongoDb    []string
 	UseRedis      []string
 	UseInfluxDb   string
+	UseEnv        []string
 	Import        string
 }
 
@@ -48,6 +49,7 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 	useEtcd := proto.GetExtension(fileOptions, rpc.E_UseEtcd).(string)
 	useMongodb := proto.GetExtension(fileOptions, rpc.E_UseMongoDb).([]string)
 	useRedis := proto.GetExtension(fileOptions, rpc.E_UseRedis).([]string)
+	useEnv := proto.GetExtension(fileOptions, rpc.E_UseEnv).([]string)
 	useInfluxDb := proto.GetExtension(fileOptions, rpc.E_UseInfluxDb).(string)
 	natsConns := make([]string, 0)
 	for _, service := range file.Services {
@@ -83,6 +85,7 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 		UseMongoDb:    useMongodb,
 		UseRedis:      useRedis,
 		UseInfluxDb:   useInfluxDb,
+		UseEnv:        useEnv,
 		Import:        fmt.Sprintf("%s/%s", moduleName, strings.ReplaceAll(string(file.GoImportPath), "\"", "")),
 	}
 	path := CombinePath(moduleName, "cmd")
