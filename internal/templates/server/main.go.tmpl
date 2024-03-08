@@ -50,17 +50,17 @@ func AddEnv(key string, envs map[string]any) error {
 			if err != nil {
 				return err
 			}
-			envs[key] = number
+			envs[segments[0]] = number
 			return nil
 		}
 	case "boolean":
 		{
-			envs[key] = strings.ToLower(value) == "true"
+			envs[segments[0]] = strings.ToLower(value) == "true"
 			return nil
 		}
 	default:
 		{
-			envs[key] = value
+			envs[segments[0]] = value
 			return nil
 		}
 	}
