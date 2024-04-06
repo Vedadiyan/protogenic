@@ -9,9 +9,19 @@ import (
 	{{- if gt .CacheInterval 0}}
 	"time"
 	{{- end }}
-
+	"fmt"
+	{{- range $key, $value := .WebHeaderCollection }}
+    {{- if eq $value.Type "variable" }}
+	"os"
+	{{ break }}
+	{{- end }}
+	{{- end }}
+	"github.com/google/uuid"
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
+	"github.com/vedadiyan/goal/pkg/di"
+	"github.com/vedadiyan/goal/pkg/http"
 	"github.com/vedadiyan/goal/pkg/service"
+	"github.com/vedadiyan/genql"
 )
 
 func init() {
