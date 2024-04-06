@@ -22,7 +22,7 @@ func init() {
 	)
 
 	var (
-		query[]byte
+		_query{{ .MethodName | ToPascalCase }} []byte
 	)
 
 	type (
@@ -30,7 +30,7 @@ func init() {
 		Response = {{ .ResponseType}}
 	)
 
-	query= {{ .Query }}
+	_query{{ .MethodName | ToPascalCase }} = {{ .Query }}
 
 	handler := func(m *Request) (*Response, error) {
 		var response Response
