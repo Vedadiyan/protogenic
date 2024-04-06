@@ -33,8 +33,18 @@ func init() {
 	_query = {{ .Query }}
 
 	handler := func(m *Request) (*Response, error) {
+		envs, err := di.ResolveWithName[map[string]any]("ENVS", nil)
+		if err != nil {
+			return nil, err
+		}
+		id := uuid.New().String()
+		constants := map[string]any{"CONTEXT_ID": id}
+		for key, value := range *envs {
+			constants[key] = value
+		}
+		vars := make(map[string]any)
 		var response Response
-		err := helpers.Exec(m, _query, &response)
+		err := helpers.Exec(m, _query, &response, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
 		if err != nil {
 			return nil, err
 		}
