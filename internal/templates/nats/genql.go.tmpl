@@ -10,12 +10,6 @@ import (
 	"time"
 	{{- end }}
 	"fmt"
-	{{- range $key, $value := .WebHeaderCollection }}
-    {{- if eq $value.Type "variable" }}
-	"os"
-	{{ break }}
-	{{- end }}
-	{{- end }}
 	"github.com/google/uuid"
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/di"
