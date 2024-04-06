@@ -39,14 +39,14 @@ func init() {
 		if err != nil {
 			return nil, err
 		}
-		id = uuid.New().String()
+		id := uuid.New().String()
 		constants := map[string]any{"CONTEXT_ID": id}
 		for key, value := range *envs {
 			constants[key] = value
 		}
 		vars := make(map[string]any)
 		var response Response
-		err := helpers.Exec(m, _query, &response, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
+		err = helpers.Exec(m, _query, &response, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
 		if err != nil {
 			return nil, err
 		}
