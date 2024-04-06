@@ -67,7 +67,7 @@ type GENQL struct {
 	RequestType   string
 	ResponseType  string
 	Query         string
-	CacheInterval int
+	CacheInterval int64
 	MethodName    string
 
 	ProtogenicVersion string
@@ -330,14 +330,15 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					}
 					global.Register(global.NATS, nats.Connection)
 					genqlService := GENQL{
-						ImportPath:   string(file.GoPackageName),
-						ConnName:     nats.Connection,
-						Namespace:    strings.ToLower(fmt.Sprintf("%s.%s", nats.Namespace, method.GoName)),
-						Queue:        EmptyIfNill(nats.Queue),
-						RequestType:  method.Input.GoIdent.GoName,
-						ResponseType: method.Output.GoIdent.GoName,
-						Query:        query,
-						MethodName:   method.GoName,
+						ImportPath:    string(file.GoPackageName),
+						ConnName:      nats.Connection,
+						Namespace:     strings.ToLower(fmt.Sprintf("%s.%s", nats.Namespace, method.GoName)),
+						Queue:         EmptyIfNill(nats.Queue),
+						RequestType:   method.Input.GoIdent.GoName,
+						ResponseType:  method.Output.GoIdent.GoName,
+						Query:         query,
+						MethodName:    method.GoName,
+						CacheInterval: IfNill(IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Configure, rpc.RpcOptions_Configure{}).CacheInterval, -1),
 						Callback: Callback{
 							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
 							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
