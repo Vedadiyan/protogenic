@@ -9,11 +9,9 @@ import (
 	{{- if gt .CacheInterval 0}}
 	"time"
 	{{- end }}
-	"fmt"
 	"github.com/google/uuid"
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/di"
-	"github.com/vedadiyan/goal/pkg/http"
 	"github.com/vedadiyan/goal/pkg/service"
 	"github.com/vedadiyan/genql"
 )
@@ -41,7 +39,7 @@ func init() {
 		if err != nil {
 			return nil, err
 		}
-		id := uuid.New().String()
+		id = uuid.New().String()
 		constants := map[string]any{"CONTEXT_ID": id}
 		for key, value := range *envs {
 			constants[key] = value
