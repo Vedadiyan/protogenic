@@ -22,7 +22,7 @@ func init() {
 	)
 
 	var (
-		_query{{ .MethodName | ToPascalCase }} []byte
+		_query []byte
 	)
 
 	type (
@@ -30,11 +30,11 @@ func init() {
 		Response = {{ .ResponseType}}
 	)
 
-	_query{{ .MethodName | ToPascalCase }} = {{ .Query }}
+	_query = {{ .Query }}
 
 	handler := func(m *Request) (*Response, error) {
 		var response Response
-		err := helpers.Exec(m, _query{{ .MethodName | ToPascalCase }}, &response)
+		err := helpers.Exec(m, _query, &response)
 		if err != nil {
 			return nil, err
 		}
