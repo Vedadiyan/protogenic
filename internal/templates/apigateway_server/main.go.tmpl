@@ -26,12 +26,12 @@ func main() {
 		auto.Bootstrap(auto.ForETCD(etcd))
 	}
 	fiber := fiber.New()
-	gateways.Bootstrap(fiber)
 	cors := cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowMethods: "*",
 		AllowHeaders: "*",
 	})
 	fiber.Use(cors)
+	gateways.Bootstrap(fiber)
 	fiber.Listen(":8080")
 }
