@@ -27,6 +27,11 @@ func main() {
 	}
 	fiber := fiber.New()
 	gateways.Bootstrap(fiber)
-	fiber.Use(cors.New())
+	cors := cors.New(cors.Config{
+		AllowOrigins: "*",
+		AllowMethods: "*",
+		AllowHeaders: "*",
+	})
+	fiber.Use(cors)
 	fiber.Listen(":8080")
 }
