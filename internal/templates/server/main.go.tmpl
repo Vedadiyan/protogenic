@@ -14,7 +14,7 @@ import (
 	"github.com/vedadiyan/genql"
 	{{- end }}
 	{{- range $index, $value := .UseGenqlFunction}}
-	dep_{{$index}} "{{$value}}" 
+	genqlFunctionProvider_{{$index}} "{{$value}}" 
 	{{- end }}
 )
 
@@ -44,7 +44,7 @@ func init() {
 		return &envs, nil
 	})
 	{{- range $index, $value := .UseGenqlFunction}}
-	for key, value := range dep_{{$index}}.Export() {
+	for key, value := range genqlFunctionProvider_{{$index}}.Export() {
 		genql.RegisterExternalFunction(key, value)
 	}
 	{{- end }}
