@@ -23,18 +23,19 @@ var (
 )
 
 type Server struct {
-	NatsConns     []string
-	PostgresConns []string
-	RedisConns    []string
-	MongoConns    []string
-	InfluxDb      string
-	ModuleName    string
-	UseEtcd       string
-	UseMongoDb    []string
-	UseRedis      []string
-	UseInfluxDb   string
-	UseEnv        []string
-	Import        string
+	NatsConns        []string
+	PostgresConns    []string
+	RedisConns       []string
+	MongoConns       []string
+	InfluxDb         string
+	ModuleName       string
+	UseEtcd          string
+	UseMongoDb       []string
+	UseRedis         []string
+	UseInfluxDb      string
+	UseEnv           []string
+	Import           string
+	UseGenqlFunction []string
 }
 
 func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.File) error {
@@ -50,6 +51,7 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 	useMongodb := proto.GetExtension(fileOptions, rpc.E_UseMongoDb).([]string)
 	useRedis := proto.GetExtension(fileOptions, rpc.E_UseRedis).([]string)
 	useEnv := proto.GetExtension(fileOptions, rpc.E_UseEnv).([]string)
+	useGenqlFunction := proto.GetExtension(fileOptions, rpc.E_UseGenqlFunction).([]string)
 	useInfluxDb := proto.GetExtension(fileOptions, rpc.E_UseInfluxDb).(string)
 	natsConns := make([]string, 0)
 	for _, service := range file.Services {
@@ -77,16 +79,17 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 		}
 	})
 	server := Server{
-		NatsConns:     natsConns,
-		PostgresConns: postgresConns,
-		RedisConns:    redisConns,
-		MongoConns:    mongoConns,
-		UseEtcd:       useEtcd,
-		UseMongoDb:    useMongodb,
-		UseRedis:      useRedis,
-		UseInfluxDb:   useInfluxDb,
-		UseEnv:        useEnv,
-		Import:        fmt.Sprintf("%s/%s", moduleName, strings.ReplaceAll(string(file.GoImportPath), "\"", "")),
+		NatsConns:        natsConns,
+		PostgresConns:    postgresConns,
+		RedisConns:       redisConns,
+		MongoConns:       mongoConns,
+		UseEtcd:          useEtcd,
+		UseMongoDb:       useMongodb,
+		UseRedis:         useRedis,
+		UseInfluxDb:      useInfluxDb,
+		UseEnv:           useEnv,
+		UseGenqlFunction: useGenqlFunction,
+		Import:           fmt.Sprintf("%s/%s", moduleName, strings.ReplaceAll(string(file.GoImportPath), "\"", "")),
 	}
 	path := CombinePath(moduleName, "cmd")
 	err = os.MkdirAll(path, os.ModePerm)

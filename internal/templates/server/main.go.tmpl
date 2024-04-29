@@ -10,6 +10,9 @@ import (
 	auto "github.com/vedadiyan/goal/pkg/config/auto"
 	"github.com/vedadiyan/goal/pkg/di"
 	"github.com/vedadiyan/goal/pkg/service"
+	{{- range $index, $value := .UseGenqlFunction}}
+	dep_{{$index}} "{{$value}}" 
+	{{- end }}
 )
 
 func init() {
@@ -37,6 +40,9 @@ func init() {
 	di.AddSinletonWithName("ENVS", func() (instance *map[string]any, err error) {
 		return &envs, nil
 	})
+	{{- range $index, $value := .UseGenqlFunction}}
+	dep_{{$index}}.Register()
+	{{- end }}
 }
 
 func AddEnv(key string, envs map[string]any) error {
