@@ -10,6 +10,9 @@ import (
 	auto "github.com/vedadiyan/goal/pkg/config/auto"
 	"github.com/vedadiyan/goal/pkg/di"
 	"github.com/vedadiyan/goal/pkg/service"
+	{{- if gt (len .UseGenqlFunction) 1 }}
+	"github.com/vedadiyan/genql"
+	{{- end }}
 	{{- range $index, $value := .UseGenqlFunction}}
 	dep_{{$index}} "{{$value}}" 
 	{{- end }}
@@ -41,7 +44,12 @@ func init() {
 		return &envs, nil
 	})
 	{{- range $index, $value := .UseGenqlFunction}}
-	dep_{{$index}}.Register()
+	{
+		functions := dep_{{$index}}.Export()
+		for key, value := range functions {
+			genql.RegisterExternalFunction(key, value)
+		}
+	}
 	{{- end }}
 }
 
