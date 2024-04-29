@@ -46,7 +46,7 @@ func init() {
 		}
 		vars := make(map[string]any)
 		var response Response
-		err = helpers.Exec(m, _query, &response, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
+		err = helpers.Exec(m, _query, &response, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars), genql.IdomaticArrays())
 		if err != nil {
 			return nil, err
 		}

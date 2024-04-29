@@ -82,9 +82,9 @@ func init () {
 		}
 		vars := make(map[string]any)
 		{{- if and (eq (index .WebHeaderCollection "content-type").Type "static") (eq (index .WebHeaderCollection "content-type").Value "application/x-www-form-urlencoded")}} 
-		req, err := helpers.ToURLEncodedReq(m, reqMapper, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
+		req, err := helpers.ToURLEncodedReq(m, reqMapper, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars), genql.IdomaticArrays())
 		{{- else }}
-		req, err := helpers.ToJSONReq(m, reqMapper, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
+		req, err := helpers.ToJSONReq(m, reqMapper, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars), genql.IdomaticArrays())
 		{{- end }}
 		if err != nil {
 			return nil, err
@@ -105,7 +105,7 @@ func init () {
 			return nil, fmt.Errorf(`%d`, res.Status())
 		}
 		var response Response
-		err = helpers.FromJSONRes(res.Reader(), resMapper, &response, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars))
+		err = helpers.FromJSONRes(res.Reader(), resMapper, &response, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.WithConstants(constants), genql.WithVars(vars), genql.IdomaticArrays())
 		if err != nil {
 			return nil, err
 		}
