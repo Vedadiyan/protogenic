@@ -44,11 +44,8 @@ func init() {
 		return &envs, nil
 	})
 	{{- range $index, $value := .UseGenqlFunction}}
-	{
-		functions := dep_{{$index}}.Export()
-		for key, value := range functions {
-			genql.RegisterExternalFunction(key, value)
-		}
+	for key, value := range dep_{{$index}}.Export() {
+		genql.RegisterExternalFunction(key, value)
 	}
 	{{- end }}
 }
