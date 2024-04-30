@@ -10,7 +10,7 @@ import (
 	auto "github.com/vedadiyan/goal/pkg/config/auto"
 	"github.com/vedadiyan/goal/pkg/di"
 	"github.com/vedadiyan/goal/pkg/service"
-	{{- if gt (len .UseGenqlFunction) 1 }}
+	{{- if gt (len .UseGenqlFunction) 0 }}
 	"github.com/vedadiyan/genql"
 	{{- end }}
 	{{- range $index, $value := .UseGenqlFunction}}
