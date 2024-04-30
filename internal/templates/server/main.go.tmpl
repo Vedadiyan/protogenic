@@ -51,7 +51,7 @@ func init() {
 func AddEnv(key string, envs map[string]any) error {
 	segments := strings.Split(key, ":")
 	keyType := segments[len(segments)-1]
-	value := os.Getenv(key)
+	value := os.Getenv(segments[0])
 	switch strings.ToLower(keyType) {
 	case "number":
 		{
