@@ -13,6 +13,9 @@ export class {{ $i.Name }} {
     }
     {{- range $x := $i.Fields }}
         {{- if $x.JSONName }}
+            {{ 4 | Indent}}has {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{end}} {
+                return "{{ $x.JSONName }}" in this.{{ "$data" }})
+            {{ 4 | Indent}}}
             {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{end}} {
                 {{ 8 | Indent}}if ("{{ $x.JSONName }}" in this.{{ "$data" }}) {
                     {{- if $x.IsBuiltIn}}
@@ -53,6 +56,9 @@ export class {{ $i.Name }} {
                 {{- end }} 
             {{ 4 | Indent}}}
         {{- else }}
+            {{ 4 | Indent}}has {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{end}} {
+                return "{{  $x.Name }}" in this.{{ "$data" }})
+            {{ 4 | Indent}}}
             {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{ end }} {
                 {{ 8 | Indent}}if ("{{  $x.Name }}" in this.{{ "$data" }}) {
                     {{- if $x.IsBuiltIn}}
