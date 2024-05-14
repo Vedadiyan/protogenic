@@ -17,7 +17,7 @@ export class {{ $i.Name }} {
                 {{4 | Indent}}{{ $x.Name | ToCamelCase}}Or(value: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }} { 
                     {{ 8 | Indent}}if ("{{ $x.JSONName }}" in this.{{ "$data" }}) {
                         {{- if $x.IsBuiltIn}}
-                            {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.JSONName }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null {{ end }}
+                            {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.JSONName }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}
                         {{- else }}
                             {{- if not $x.IsArray }}
                                 {{ 12 | Indent}}return new {{ $x.Type }}(this.{{ "$data" }}.{{ $x.JSONName }} as Object)
@@ -73,7 +73,7 @@ export class {{ $i.Name }} {
                 {{4 | Indent}}{{ $x.Name | ToCamelCase}}Or(value: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }} { 
                     {{ 8 | Indent}}if ("{{ $x.Name }}" in this.{{ "$data" }}) {
                         {{- if $x.IsBuiltIn}}
-                            {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.Name }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null {{ end }}
+                            {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.Name }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}
                         {{- else }}
                             {{- if not $x.IsArray }}
                                 {{ 12 | Indent}}return new {{ $x.Type }}(this.{{ "$data" }}.{{ $x.Name }} as Object)
