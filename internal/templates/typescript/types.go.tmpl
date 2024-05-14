@@ -26,7 +26,7 @@ export class {{ $i.Name }} {
                             {{- end }}
                         {{- end }}
                     {{ 8 | Indent}}}
-                    return value
+                    {{ 4 | Indent }} return value
                 {{ 4 | Indent}}}
             {{- end}} 
             {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{end}} {
@@ -82,7 +82,7 @@ export class {{ $i.Name }} {
                             {{- end }}
                         {{- end }}
                     {{ 8 | Indent}}}
-                    return value
+                    {{ 4 | Indent }} return value
                 {{ 4 | Indent}}}
             {{- end}} 
             {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{ end }} {
