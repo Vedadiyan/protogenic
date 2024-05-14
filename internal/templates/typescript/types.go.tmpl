@@ -29,10 +29,10 @@ export class {{ $i.Name }} {
                     {{ 4 | Indent }} return value
                 {{ 4 | Indent}}}
             {{- end}} 
-            {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{end}} {
+            {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn) }} | null | undefined{{end}} {
                 {{ 8 | Indent}}if ("{{ $x.JSONName }}" in this.{{ "$data" }}) {
                     {{- if $x.IsBuiltIn}}
-                        {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.JSONName }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null {{ end }}
+                        {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.JSONName }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn) }} | null {{ end }}
                     {{- else }}
                         {{- if not $x.IsArray }}
                             {{ 12 | Indent}}return new {{ $x.Type }}(this.{{ "$data" }}.{{ $x.JSONName }} as Object)
@@ -41,17 +41,17 @@ export class {{ $i.Name }} {
                         {{- end }}
                     {{- end }}
                 {{ 8 | Indent}}}
-                {{- if $x.Optional }} 
+                {{- if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn) }} 
                     {{ 8 | Indent}}return undefined 
                 {{- else }}
                     {{ 8 | Indent}}throw "`{{ $x.JSONName }}` does not exist on the object" 
                 {{- end }}
             {{ 4 | Indent}}}
-            {{ 4 | Indent}}set {{ $x.Name | ToCamelCase}}(v: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{ end }}) {
+            {{ 4 | Indent}}set {{ $x.Name | ToCamelCase}}(v: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn) }} | null | undefined{{ end }}) {
                 {{- if $x.IsBuiltIn}}
                     {{ 8 | Indent}}this.{{ "$data" }}.{{ $x.JSONName }} = v
                 {{- else }}
-                    {{- if $x.Optional }}
+                    {{- if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn) }}
                         {{ 8 | Indent}}if (v) {
                             {{- if $x.IsArray }} 
                                 {{ 12 | Indent}}this.{{ "$data" }}.{{ $x.JSONName }} = v.map(x => x.{{ "$raw" }})
@@ -85,10 +85,10 @@ export class {{ $i.Name }} {
                     {{ 4 | Indent }} return value
                 {{ 4 | Indent}}}
             {{- end}} 
-            {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{ end }} {
+            {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn)  }} | null | undefined{{ end }} {
                 {{ 8 | Indent}}if ("{{  $x.Name }}" in this.{{ "$data" }}) {
                     {{- if $x.IsBuiltIn}}
-                        {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.Name }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null {{ end }}
+                        {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.Name }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn)  }} | null {{ end }}
                     {{- else }}
                         {{- if not $x.IsArray }}
                             {{ 12 | Indent}}return new {{ $x.Type }}(this.{{ "$data" }}.{{ $x.Name }} as Object)
@@ -97,17 +97,17 @@ export class {{ $i.Name }} {
                         {{- end }}
                     {{- end }}
                 {{ 8 | Indent}}}
-                {{- if $x.Optional }}
+                {{- if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn)  }}
                     {{ 8 | Indent}}return undefined 
                 {{- else }}
                     {{ 8 | Indent}}throw "`{{ $x.Name }}` does not exist on the object" 
                 {{- end }}
             {{ 4 | Indent}}}
-            {{ 4 | Indent}}set {{ $x.Name | ToCamelCase}}(v: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{ end }}) {
+            {{ 4 | Indent}}set {{ $x.Name | ToCamelCase}}(v: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn)  }} | null | undefined{{ end }}) {
                 {{- if $x.IsBuiltIn}}
                     {{ 8 | Indent}}this.{{ "$data" }}.{{ $x.Name }} = v
                 {{- else }}
-                    {{- if $x.Optional }}
+                    {{- if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn)  }}
                         {{ 8 | Indent}}if (v) {
                             {{- if $x.IsArray }} 
                                 {{ 12 | Indent}}this.{{ "$data" }}.{{ $x.Name }} = v.map(x => x.{{ "$raw" }})
