@@ -13,9 +13,22 @@ export class {{ $i.Name }} {
     }
     {{- range $x := $i.Fields }}
         {{- if $x.JSONName }}
-            {{ 4 | Indent}}has {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{end}} {
-                return "{{ $x.JSONName }}" in this.{{ "$data" }})
-            {{ 4 | Indent}}}
+            {{- if $x.Optional }}
+                {{4 | Indent}}{{ $x.Name | ToCamelCase}}Or(value: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }} { 
+                    {{ 8 | Indent}}if ("{{ $x.JSONName }}" in this.{{ "$data" }}) {
+                        {{- if $x.IsBuiltIn}}
+                            {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.JSONName }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null {{ end }}
+                        {{- else }}
+                            {{- if not $x.IsArray }}
+                                {{ 12 | Indent}}return new {{ $x.Type }}(this.{{ "$data" }}.{{ $x.JSONName }} as Object)
+                            {{- else }}
+                                {{ 12 | Indent}}return {{ $x.Type }}.fromArray(this.{{ "$data" }}.{{ $x.JSONName }} as [])
+                            {{- end }}
+                        {{- end }}
+                    {{ 8 | Indent}}}
+                    return value
+                {{ 4 | Indent}}}
+            {{- end}} 
             {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{end}} {
                 {{ 8 | Indent}}if ("{{ $x.JSONName }}" in this.{{ "$data" }}) {
                     {{- if $x.IsBuiltIn}}
@@ -56,9 +69,22 @@ export class {{ $i.Name }} {
                 {{- end }} 
             {{ 4 | Indent}}}
         {{- else }}
-            {{ 4 | Indent}}has {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{end}} {
-                return "{{  $x.Name }}" in this.{{ "$data" }})
-            {{ 4 | Indent}}}
+            {{- if $x.Optional }}
+                {{4 | Indent}}{{ $x.Name | ToCamelCase}}Or(value: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }} { 
+                    {{ 8 | Indent}}if ("{{ $x.Name }}" in this.{{ "$data" }}) {
+                        {{- if $x.IsBuiltIn}}
+                            {{ 12 | Indent}}return this.{{ "$data" }}.{{ $x.Name }} as {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null {{ end }}
+                        {{- else }}
+                            {{- if not $x.IsArray }}
+                                {{ 12 | Indent}}return new {{ $x.Type }}(this.{{ "$data" }}.{{ $x.Name }} as Object)
+                            {{- else }}
+                                {{ 12 | Indent}}return {{ $x.Type }}.fromArray(this.{{ "$data" }}.{{ $x.Name }} as [])
+                            {{- end }}
+                        {{- end }}
+                    {{ 8 | Indent}}}
+                    return value
+                {{ 4 | Indent}}}
+            {{- end}} 
             {{ 4 | Indent}}get {{ $x.Name | ToCamelCase}}(): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}{{ if $x.Optional }} | null | undefined{{ end }} {
                 {{ 8 | Indent}}if ("{{  $x.Name }}" in this.{{ "$data" }}) {
                     {{- if $x.IsBuiltIn}}
