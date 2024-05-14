@@ -13,7 +13,7 @@ export class {{ $i.Name }} {
     }
     {{- range $x := $i.Fields }}
         {{- if $x.JSONName }}
-            {{- if $x.Optional }}
+            {{- if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn) }}
                 {{4 | Indent}}{{ $x.Name | ToCamelCase}}Or(value: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }} { 
                     {{ 8 | Indent}}if ("{{ $x.JSONName }}" in this.{{ "$data" }}) {
                         {{- if $x.IsBuiltIn}}
@@ -69,7 +69,7 @@ export class {{ $i.Name }} {
                 {{- end }} 
             {{ 4 | Indent}}}
         {{- else }}
-            {{- if $x.Optional }}
+            {{- if or ($x.Optional) ($x.IsArray) (not $x.IsBuiltIn) }}
                 {{4 | Indent}}{{ $x.Name | ToCamelCase}}Or(value: {{ $x.Type }}{{if $x.IsArray}}[]{{ end }}): {{ $x.Type }}{{if $x.IsArray}}[]{{ end }} { 
                     {{ 8 | Indent}}if ("{{ $x.Name }}" in this.{{ "$data" }}) {
                         {{- if $x.IsBuiltIn}}
