@@ -10,6 +10,7 @@ import (
 	"time"
 	{{- end }}
 
+	"github.com/vedadiyan/genql"
 	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/db/postgres"
 	"github.com/vedadiyan/goal/pkg/service"
@@ -43,7 +44,7 @@ func init() {
 	sql = {{ .Sql }}
 	
 	handler :=func(m *Request) (*Response, error) {
-		arguments, err := helpers.ExecToMap(m, reqMapper)
+		arguments, err := helpers.ExecToMap(m, reqMapper, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.IdomaticArrays())
 		if err != nil {
 			return nil, err
 		}
@@ -52,7 +53,7 @@ func init() {
 			return nil, err
 		}
 		var response Response
-		err = helpers.ExecFromMap(map[string]any {"data": res}, resMapper, &response)
+		err = helpers.ExecFromMap(map[string]any {"data": res}, resMapper, &response, genql.Wrapped(), genql.PostgresEscapingDialect(), genql.IdomaticArrays())
 		if err != nil {
 			return nil, err
 		}
