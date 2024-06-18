@@ -231,10 +231,13 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					}
 					sql := "[]byte{}"
 					var _type string
-					switch postgresql.Sql.(type) {
+					switch t := postgresql.Sql.(type) {
 					case *rpc.PostgreSQL_Command:
 						{
 							_type = "command"
+							if t.Command.IsTemplate {
+								_type = "command_template"
+							}
 							switch postgresql.GetCommand().Mapper.(type) {
 							case *rpc.Mapper_File:
 								{
@@ -253,6 +256,9 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					case *rpc.PostgreSQL_Query:
 						{
 							_type = "query"
+							if t.Query.IsTemplate {
+								_type = "query_template"
+							}
 							switch postgresql.GetQuery().Mapper.(type) {
 							case *rpc.Mapper_File:
 								{

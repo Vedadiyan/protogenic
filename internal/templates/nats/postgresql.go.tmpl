@@ -30,7 +30,7 @@ func init() {
 		CN       = "{{ .ConnName }}"
 		NS       = "{{ .Namespace }}"
 		QUEUE    = "{{ .Queue }}"
-		TYPE     = {{ if eq .Type "command" }} postgres.COMMAND {{ else if eq .Type "query" }} postgres.QUERY {{ end }}
+		TYPE     = {{ if eq .Type "command" }} postgres.COMMAND {{ else if eq .Type "command_tmeplate" }} postgres.COMMAND_TEMPLATE {{ else if eq .Type "query" }} postgres.QUERY {{ else if eq .Type "query_template" }} postgres.QUERY_TEMPLATE {{ end }}
 	)
 
 	var (
