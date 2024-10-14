@@ -30,6 +30,7 @@ func init() {
 		CN         = "{{ .ConnName }}"
 		NS         = "{{ .Namespace }}"
 		QUEUE      = "{{ .Queue }}"
+        TYPE       =  "{{ .Type }}"
 	)
 
 	var (
@@ -61,6 +62,25 @@ func init() {
         client, err := di.ResolveWithName[dgo.Dgraph](DSN, nil)
         if err != nil {
             return nil, err
+        }
+
+        if TYPE = "command" {
+            data, err := protojson.Marshal(m)
+            if err != nil {
+                return nil, err
+            }
+            rs, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, SetJson: data)}
+            if err != nil {
+                return nil, err
+            }
+            ids := make([]string) 
+            for _, value := range rs.Uids {
+                ids = append(ids, value)
+            }
+
+            response := Response{}
+            response.Ids = ids
+            return response, nil
         }
 
         var buffer bytes.Buffer
