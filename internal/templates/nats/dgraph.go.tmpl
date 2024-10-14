@@ -64,7 +64,7 @@ func init() {
             return nil, err
         }
 
-        if TYPE = "command" {
+        if TYPE = "set" {
             data, err := protojson.Marshal(m)
             if err != nil {
                 return nil, err
@@ -86,6 +86,19 @@ func init() {
             }
 
             response.Ids = ids
+            return &response, nil
+        }
+
+        if TYPE = "delete" {
+            data, err := protojson.Marshal(m)
+            if err != nil {
+                return nil, err
+            }
+            rs, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, DelJson: data)}
+            if err != nil {
+                return nil, err
+            }
+            response := Response{}
             return &response, nil
         }
 
