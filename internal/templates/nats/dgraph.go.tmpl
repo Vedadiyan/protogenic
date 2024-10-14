@@ -73,14 +73,20 @@ func init() {
             if err != nil {
                 return nil, err
             }
+            response := Response{}
+            
+            if rs.Uids == nil { 
+                return &response, nil
+            }
+
             ids := make([]string) 
+
             for _, value := range rs.Uids {
                 ids = append(ids, value)
             }
 
-            response := Response{}
             response.Ids = ids
-            return response, nil
+            return &response, nil
         }
 
         var buffer bytes.Buffer
