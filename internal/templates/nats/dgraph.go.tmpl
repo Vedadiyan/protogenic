@@ -101,7 +101,7 @@ func init() {
             return &response, nil
         }
 
-        rs, err := client.NewTxn().Query(context.Background(), buffer.String())
+        rs, err := client.NewReadOnlyTxn().Query(context.Background(), buffer.String())
         if err != nil {
             return nil, err
         }
