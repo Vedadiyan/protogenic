@@ -59,59 +59,48 @@ func init() {
     unmarshaller := protojson.UnmarshalOptions{DiscardUnknown: true}
 
 	handler := func(m *Request) (*Response, error) {
-        client, err := di.ResolveWithName[dgo.Dgraph](DSN, nil)
-        if err != nil {
-            return nil, err
-        }
-
-        var buffer bytes.Buffer
-        err = template.Execute(&buffer, m)
-        if err != nil {
-            return nil, err
-        }
-
-        if TYPE = "set" {
-            rs, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, SetJson: buffer.Bytes())}
-            if err != nil {
-                return nil, err
-            }
-            response := Response{}
-            
-            if rs.Uids == nil { 
-                return &response, nil
-            }
-
-            ids := make([]string) 
-
-            for _, value := range rs.Uids {
-                ids = append(ids, value)
-            }
-
-            response.Ids = ids
-            return &response, nil
-        }
-
-        if TYPE = "delete" {
-            rs, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, DelJson: buffer.Bytes())}
-            if err != nil {
-                return nil, err
-            }
-
-            response := Response{}
-            return &response, nil
-        }
-
-        rs, err := client.NewReadOnlyTxn().Query(context.Background(), buffer.String())
-        if err != nil {
-            return nil, err
-        }
-		
-        var response Response
-        err = unmarshaller.Unmarshal(rs.Json, &response)
-        if err != nil {
-            return nil, err
-        }
-    
+		client, err := di.ResolveWithName[dgo.Dgraph](DSN, nil)
+		if err != nil {
+			return nil, err
+		}
+		var buffer bytes.Buffer
+		err = template.Execute(&buffer, m)
+		if err != nil {
+			return nil, err
+		}
+		if TYPE == "set" {
+			rs, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, SetJson: buffer.Bytes()})
+			if err != nil {
+				return nil, err
+			}
+			response := Response{}
+			if rs.Uids == nil {
+				return &response, nil
+			}
+			ids := make([]string, 0)
+			for _, value := range rs.Uids {
+				ids = append(ids, value)
+			}
+			response.Ids = ids
+			return &response, nil
+		}
+		if TYPE == "delete" {
+			_, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, DelJson: buffer.Bytes()})
+			if err != nil {
+				return nil, err
+			}
+			response := Response{}
+			return &response, nil
+		}
+		rs, err := client.NewReadOnlyTxn().Query(context.Background(), buffer.String())
+		if err != nil {
+			return nil, err
+		}
+		var response Response
+		err = unmarshaller.Unmarshal(rs.Json, &response)
+		if err != nil {
+			return nil, err
+		}
 		return &response, nil
 	}
 

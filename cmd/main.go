@@ -11,7 +11,6 @@ import (
 	protogenic "github.com/vedadiyan/protogenic/internal"
 	gengo "google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo"
 	"google.golang.org/protobuf/compiler/protogen"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
@@ -172,15 +171,7 @@ func RunProtoc() {
 			}
 			// }
 		}
-		serialized, err := proto.Marshal(fdSet)
-		if err != nil {
-			return fmt.Errorf("failed to serialize descriptor set: %v", err)
-		}
 
-		// Write the serialized descriptor set to a file
-		if err := os.WriteFile("test", serialized, 0644); err != nil {
-			return fmt.Errorf("failed to write serialized descriptor set: %v", err)
-		}
 		return nil
 	})
 }
