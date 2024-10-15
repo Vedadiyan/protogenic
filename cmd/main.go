@@ -11,6 +11,8 @@ import (
 	protogenic "github.com/vedadiyan/protogenic/internal"
 	gengo "google.golang.org/protobuf/cmd/protoc-gen-go/internal_gengo"
 	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protodesc"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
@@ -50,12 +52,16 @@ func RunProtoc() {
 				}
 			}
 		}
+		fdSet := &descriptorpb.FileDescriptorSet{
+			File: make([]*descriptorpb.FileDescriptorProto, 0, len(gen.FilesByPath)),
+		}
 		for name, f := range gen.FilesByPath {
 			_ = wd
 			_ = name
 			if !f.Generate {
 				continue
 			}
+			fdSet.File = append(fdSet.File, f.Proto)
 			if len(f.Services) > 0 {
 				if _, ok := features["service"]; ok {
 					err := protogenic.GenerateNats(module, gen, f)
@@ -100,6 +106,7 @@ func RunProtoc() {
 			fileMap := make(map[string]string)
 			for i := 0; i < f.Desc.Imports().Len(); i++ {
 				file := f.Desc.Imports().Get(i)
+				fdSet.File = append(fdSet.File, protodesc.ToFileDescriptorProto(file))
 				if file.Package().Name() == "protobuf" {
 					continue
 				}
@@ -164,6 +171,15 @@ func RunProtoc() {
 				panic(err)
 			}
 			// }
+		}
+		serialized, err := proto.Marshal(fdSet)
+		if err != nil {
+			return fmt.Errorf("failed to serialize descriptor set: %v", err)
+		}
+
+		// Write the serialized descriptor set to a file
+		if err := os.WriteFile("test", serialized, 0644); err != nil {
+			return fmt.Errorf("failed to write serialized descriptor set: %v", err)
 		}
 		return nil
 	})

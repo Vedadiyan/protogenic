@@ -23,6 +23,8 @@ var (
 	_genql string
 	//go:embed templates/nats/postgresql.go.tmpl
 	_postgresql string
+	//go:embed templates/nats/dgraph.go.tmpl
+	_dgraph string
 )
 
 type Callback struct {
@@ -97,6 +99,26 @@ type PostgreSQL struct {
 	File              string
 }
 
+type DGraph struct {
+	Callback
+	ImportPath    string
+	ExtraImports  []string
+	ConnName      string
+	Dsn           string
+	Type          string
+	Query         string
+	Namespace     string
+	Queue         string
+	RequestType   string
+	ResponseType  string
+	CacheInterval int64
+	MethodName    string
+
+	ProtogenicVersion string
+	CompilerVersion   string
+	File              string
+}
+
 func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.File) error {
 	pathPrefix, _ := GetPathAndExecutable()
 	path, err := os.Getwd()
@@ -108,6 +130,10 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 		return err
 	}
 	postgresqlTemplate, err := template.New("postgres").Funcs(_funcs).Parse(_postgresql)
+	if err != nil {
+		return err
+	}
+	dgraphTemplate, err := template.New("dgraph").Funcs(_funcs).Parse(_dgraph)
 	if err != nil {
 		return err
 	}
@@ -316,6 +342,65 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
 					var serverCode bytes.Buffer
 					err := postgresqlTemplate.Execute(&serverCode, postgresService)
+					if err != nil {
+						return err
+					}
+					svc.P(serverCode.String())
+				}
+			case *rpc.Definition_Dgraph:
+				{
+					dgraph := defnition.GetDgraph()
+					input := "[]byte{}"
+					if dgraph.Input.GetSql() != "" {
+						input = StringToGoByteArray(dgraph.Input.GetSql())
+					} else if dgraph.Input.GetFile() != "" {
+						file, err := os.ReadFile(CombinePath(pathPrefix, path, dgraph.Input.GetFile()))
+						if err != nil {
+							return err
+						}
+						input = StringToGoByteArray(string(file))
+					}
+					_type := dgraph.Type
+
+					extraImports := make([]string, 0)
+					inputImportPathArray := strings.Split(strings.TrimPrefix(strings.TrimSuffix(method.Input.GoIdent.GoImportPath.String(), "\""), "\""), "/")
+					var inputPrefix string
+					if file.GoImportPath.String() != method.Input.GoIdent.GoImportPath.String() {
+						extraImports = append(extraImports, method.Input.GoIdent.GoImportPath.String())
+						inputPrefix = fmt.Sprintf("%s.", inputImportPathArray[len(inputImportPathArray)-1])
+					}
+					global.Register(global.NATS, nats.Connection)
+					global.Register(global.POSTGRES, dgraph.GetDsn())
+					postgresService := DGraph{
+						ImportPath:    string(file.GoPackageName),
+						ExtraImports:  extraImports,
+						ConnName:      nats.Connection,
+						Dsn:           dgraph.GetDsn(),
+						Query:         input,
+						Type:          _type,
+						Namespace:     strings.ToLower(fmt.Sprintf("%s.%s", nats.Namespace, method.GoName)),
+						Queue:         EmptyIfNill(nats.Queue),
+						RequestType:   fmt.Sprintf("%s%s", inputPrefix, method.Input.GoIdent.GoName),
+						ResponseType:  method.Output.GoIdent.GoName,
+						CacheInterval: IfNill(IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Configure, rpc.RpcOptions_Configure{}).CacheInterval, -1),
+						MethodName:    method.GoName,
+						Callback: Callback{
+							OnSuccess: IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnSuccess,
+							OnError:   IfNill(IfNill(rpcOptions, rpc.RpcOptions{}).Events, rpc.RpcOptions_Events{}).OnFailure,
+						},
+						ProtogenicVersion: GetVersion(),
+						CompilerVersion:   plugin.Request.CompilerVersion.String(),
+						File:              file.GoImportPath.String(),
+					}
+					path := strings.Split(strings.ReplaceAll(file.GeneratedFilenamePrefix, "\\", "/"), "/")
+					methodName := ""
+					if strings.ToLower(method.GoName) != "ommit" {
+						methodName = fmt.Sprintf(".%s", strings.ToLower(method.GoName))
+					}
+					filename := moduleName + "/" + strings.Join(path[:len(path)-1], "/") + "/" + fmt.Sprintf("%s%s.pb.go", service.GoName, methodName)
+					svc := plugin.NewGeneratedFile(strings.ToLower(filename), file.GoImportPath)
+					var serverCode bytes.Buffer
+					err := dgraphTemplate.Execute(&serverCode, postgresService)
 					if err != nil {
 						return err
 					}

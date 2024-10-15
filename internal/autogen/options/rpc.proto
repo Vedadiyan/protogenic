@@ -33,6 +33,12 @@ message GENQL {
     Mapper query = 1;
 }
 
+message DGraph {
+    string dsn = 1;
+    string type = 2;
+    Mapper input = 3;
+}
+
 message PostgreSQL {
     string dsn = 1;
     Mapper request_mapper = 2;
@@ -76,6 +82,7 @@ message Definition {
         HTTP http = 1;
         GENQL genql = 2;
         PostgreSQL postgresql = 3;
+        DGraph dgraph = 4;
     }
 }
 
