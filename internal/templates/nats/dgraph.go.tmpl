@@ -64,12 +64,14 @@ func init() {
             return nil, err
         }
 
+        var buffer bytes.Buffer
+        err = template.Execute(&buffer, m)
+        if err != nil {
+            return nil, err
+        }
+
         if TYPE = "set" {
-            data, err := protojson.Marshal(m)
-            if err != nil {
-                return nil, err
-            }
-            rs, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, SetJson: data)}
+            rs, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, SetJson: buffer.Bytes())}
             if err != nil {
                 return nil, err
             }
@@ -90,22 +92,13 @@ func init() {
         }
 
         if TYPE = "delete" {
-            data, err := protojson.Marshal(m)
+            rs, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, DelJson: buffer.Bytes())}
             if err != nil {
                 return nil, err
             }
-            rs, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, DelJson: data)}
-            if err != nil {
-                return nil, err
-            }
+
             response := Response{}
             return &response, nil
-        }
-
-        var buffer bytes.Buffer
-        err = template.Execute(&buffer, m)
-        if err != nil {
-            return nil, err
         }
 
         rs, err := client.NewTxn().Query(context.Background(), buffer.String())
