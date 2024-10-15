@@ -16,6 +16,11 @@ import (
 	{{- range $index, $value := .UseGenqlFunction}}
 	genqlFunctionProvider_{{$index}} "{{$value}}" 
 	{{- end }}
+	{{- if gt (len .DGraphConns) 0 }}
+	"github.com/dgraph-io/dgo/v2"
+	"github.com/dgraph-io/dgo/v2/protos/api"
+	"google.golang.org/grpc"
+	{{- end }}
 )
 
 func init() {
@@ -33,6 +38,16 @@ func init() {
 	{{- end }}	
 	{{- if .UseInfluxDb }}
 	helpers.AddInfluxDb("{{ .UseInfluxDb }}", "{{ .ModuleName }}")
+	{{- end }}
+	{{- range $i, $key := .DGraphConns}}
+	di.AddSinletonWithName("{{$key}}", func() (*dgo.Dgraph, error) {
+		conn, err := grpc.Dial(os.Getenv("{{$key}}"), grpc.WithInsecure())
+		if err != nil {
+			return nil, err
+		}
+		client := dgo.NewDgraphClient(api.NewDgraphClient(conn))
+		return client, nil
+	})
 	{{- end }}
 	envs := make(map[string]any)
 	{{- range $i, $env := .UseEnv }}

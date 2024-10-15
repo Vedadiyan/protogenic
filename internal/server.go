@@ -25,6 +25,7 @@ var (
 type Server struct {
 	NatsConns        []string
 	PostgresConns    []string
+	DGraphConns      []string
 	RedisConns       []string
 	MongoConns       []string
 	InfluxDb         string
@@ -62,6 +63,7 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 	postgresConns := make([]string, 0)
 	redisConns := make([]string, 0)
 	mongoConns := make([]string, 0)
+	dgraphConns := make([]string, 0)
 	global.ForEach(func(dependencyType global.DEPENDENCY_TYPES, key string) {
 		switch dependencyType {
 		case global.POSTGRES:
@@ -76,6 +78,10 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 			{
 				mongoConns = append(mongoConns, key)
 			}
+		case global.DGRAPH:
+			{
+				dgraphConns = append(dgraphConns, key)
+			}
 		}
 	})
 	server := Server{
@@ -83,6 +89,7 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 		PostgresConns:    postgresConns,
 		RedisConns:       redisConns,
 		MongoConns:       mongoConns,
+		DGraphConns:      dgraphConns,
 		UseEtcd:          useEtcd,
 		UseMongoDb:       useMongodb,
 		UseRedis:         useRedis,

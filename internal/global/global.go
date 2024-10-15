@@ -10,6 +10,7 @@ const (
 	MONGO    DEPENDENCY_TYPES = "mongo"
 	NATS     DEPENDENCY_TYPES = "nats"
 	INFLUX   DEPENDENCY_TYPES = "influx"
+	DGRAPH   DEPENDENCY_TYPES = "dgraph"
 )
 
 var (

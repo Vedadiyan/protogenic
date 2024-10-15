@@ -370,7 +370,7 @@ func GenerateNats(moduleName string, plugin *protogen.Plugin, file *protogen.Fil
 						inputPrefix = fmt.Sprintf("%s.", inputImportPathArray[len(inputImportPathArray)-1])
 					}
 					global.Register(global.NATS, nats.Connection)
-					global.Register(global.POSTGRES, dgraph.GetDsn())
+					global.Register(global.DGRAPH, dgraph.GetDsn())
 					postgresService := DGraph{
 						ImportPath:    string(file.GoPackageName),
 						ExtraImports:  extraImports,
