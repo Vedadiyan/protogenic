@@ -171,7 +171,6 @@ func RunProtoc() {
 			}
 			// }
 		}
-
 		return nil
 	})
 }

@@ -15,13 +15,15 @@ import (
 	{{- if gt .CacheInterval 0}}
 	"time"
 	{{- end }}
-	"github.com/google/uuid"
-	helpers "github.com/vedadiyan/goal-helpers/pkg"
 	"github.com/vedadiyan/goal/pkg/di"
 	"github.com/vedadiyan/goal/pkg/service"
-	"github.com/vedadiyan/genql"
     "github.com/dgraph-io/dgo/v2"
+	{{- if ne .Type "query"}} 
+	"github.com/dgraph-io/dgo/v2/protos/api"
+	{{- end }}
+	{{- if eq .Type "query"}} 
     "google.golang.org/protobuf/encoding/protojson"
+	{{- end }}
 )
 
 func init() {
@@ -30,7 +32,6 @@ func init() {
 		CN         	= "{{ .ConnName }}"
 		NS         	= "{{ .Namespace }}"
 		QUEUE      	= "{{ .Queue }}"
-        	TYPE       	=  "{{ .Type }}"
 	)
 
 	var (
@@ -45,7 +46,7 @@ func init() {
 	_query = {{ .Query }}
 
     sha256 := sha256.New()
-	_, err := sha256.Write()
+	_, err := sha256.Write(_query)
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +57,9 @@ func init() {
 		panic(err)
 	}
 
+	{{- if eq .Type "query"}} 
     unmarshaller := protojson.UnmarshalOptions{DiscardUnknown: true}
+	{{- end }}
 
 	handler := func(m *Request) (*Response, error) {
 		client, err := di.ResolveWithName[dgo.Dgraph](DSN, nil)
@@ -68,30 +71,29 @@ func init() {
 		if err != nil {
 			return nil, err
 		}
-		if TYPE == "set" {
-			rs, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, SetJson: buffer.Bytes()})
-			if err != nil {
-				return nil, err
-			}
-			response := Response{}
-			if rs.Uids == nil {
-				return &response, nil
-			}
-			ids := make([]string, 0)
-			for _, value := range rs.Uids {
-				ids = append(ids, value)
-			}
-			response.Ids = ids
+		{{- if eq .Type "set"}} 
+		rs, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, SetJson: buffer.Bytes()})
+		if err != nil {
+			return nil, err
+		}
+		response := Response{}
+		if rs.Uids == nil {
 			return &response, nil
 		}
-		if TYPE == "delete" {
-			_, err := client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, DelJson: buffer.Bytes()})
-			if err != nil {
-				return nil, err
-			}
-			response := Response{}
-			return &response, nil
+		ids := make([]string, 0)
+		for _, value := range rs.Uids {
+			ids = append(ids, value)
 		}
+		response.Uids = ids
+		return &response, nil
+		{{- else if eq .Type "delete"}} 
+		_, err = client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, DeleteJson: buffer.Bytes()})
+		if err != nil {
+			return nil, err
+		}
+		response := Response{}
+		return &response, nil
+		{{- else }}
 		rs, err := client.NewReadOnlyTxn().Query(context.Background(), buffer.String())
 		if err != nil {
 			return nil, err
@@ -102,6 +104,7 @@ func init() {
 			return nil, err
 		}
 		return &response, nil
+		{{- end}}
 	}
 
 	service.Register(
