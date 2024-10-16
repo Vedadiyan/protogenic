@@ -55,10 +55,15 @@ func GenerateServer(moduleName string, plugin *protogen.Plugin, file *protogen.F
 	useGenqlFunction := proto.GetExtension(fileOptions, rpc.E_UseGenqlFunction).([]string)
 	useInfluxDb := proto.GetExtension(fileOptions, rpc.E_UseInfluxDb).(string)
 	natsConns := make([]string, 0)
+	duplicateFounder := make(map[string]bool)
 	for _, service := range file.Services {
 		serviceOptions := service.Desc.Options().(*descriptorpb.ServiceOptions)
 		nats := proto.GetExtension(serviceOptions, rpc.E_Nats).(*rpc.NATS)
+		if _, ok := duplicateFounder[nats.Connection]; ok {
+			continue
+		}
 		natsConns = append(natsConns, nats.Connection)
+		duplicateFounder[nats.Connection] = true
 	}
 	postgresConns := make([]string, 0)
 	redisConns := make([]string, 0)
