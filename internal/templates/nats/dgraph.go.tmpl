@@ -17,9 +17,9 @@ import (
 	{{- end }}
 	"github.com/vedadiyan/goal/pkg/di"
 	"github.com/vedadiyan/goal/pkg/service"
-    "github.com/dgraph-io/dgo/v2"
+    "github.com/dgraph-io/dgo/v250"
 	{{- if ne .Type "query"}} 
-	"github.com/dgraph-io/dgo/v2/protos/api"
+	"github.com/dgraph-io/dgo/v250/protos/api"
 	{{- end }}
 	{{- if eq .Type "query"}} 
     "google.golang.org/protobuf/encoding/protojson"
