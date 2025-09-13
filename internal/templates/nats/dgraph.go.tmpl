@@ -86,6 +86,39 @@ func init() {
 		}
 		response.Uids = ids
 		return &response, nil
+		{{- else if eq .Type "upsert"}}
+		var queryBuf bytes.Buffer
+		err = template.ExecuteTemplate(&queryBuf, "query", m)
+		if err != nil {
+			return nil, err
+		}
+
+		var mutationBuf bytes.Buffer
+		err = template.ExecuteTemplate(&mutationBuf, "mutation", m)
+		if err != nil {
+			return nil, err
+		}
+
+		rs, err := client.NewTxn().Do(context.Background(), &api.Request{
+			Query: queryBuf.String(),
+			Mutations: []*api.Mutation{
+				{SetJson: mutationBuf.Bytes()},
+			},
+			CommitNow: true,
+		})
+		if err != nil {
+			return nil, err
+		}
+		response := Response{}
+		if rs.Uids == nil {
+			return &response, nil
+		}
+		ids := make([]string, 0)
+		for _, value := range rs.Uids {
+			ids = append(ids, value)
+		}
+		response.Uids = ids
+		return &response, nil
 		{{- else if eq .Type "delete"}} 
 		_, err = client.NewTxn().Mutate(context.Background(), &api.Mutation{CommitNow: true, DeleteJson: buffer.Bytes()})
 		if err != nil {
